@@ -170,9 +170,30 @@
     padding: 9px 14px; text-align: left; white-space: nowrap;
     border-bottom: 1px solid var(--border);
   }
-  td { padding: 10px 14px; border-bottom: 1px solid var(--bg); color: var(--text); white-space: nowrap; }
+  td { padding: 0; border-bottom: 1px solid var(--bg); color: var(--text); white-space: nowrap; }
+  td input.cell-input {
+    width: 100%; border: none; background: transparent; font-family: var(--mono);
+    font-size: 12px; color: var(--text); padding: 10px 14px; outline: none;
+    white-space: nowrap; box-sizing: border-box; cursor: text;
+  }
+  td input.cell-input:focus {
+    background: #fff; box-shadow: inset 0 0 0 2px var(--accent);
+    border-radius: 4px; color: var(--text);
+  }
+  td input.cell-input.cell-amount {
+    color: var(--accent2); font-weight: 600; text-align: right;
+  }
+  td input.cell-input.cell-muted { color: var(--text2); }
+  td input.cell-input.cell-edited { background: #fffbe6; }
+  tr:hover td input.cell-input:not(:focus) { background: var(--accent-light); }
+  .edit-badge {
+    font-family: var(--mono); font-size: 9px; padding: 2px 7px;
+    border-radius: 10px; background: #fff3cd; color: #7a5c00;
+    border: 1px solid #f5c842; display: none; margin-left: 8px; vertical-align: middle;
+  }
+  .edit-badge.visible { display: inline; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--accent-light); }
+  tr:hover td { background: transparent; }
   .td-amount { color: var(--accent2); font-weight: 600; }
   .td-muted  { color: var(--text2); }
 
@@ -242,6 +263,26 @@
   .toast.success { border-left: 3px solid var(--success); }
   .toast.error   { border-left: 3px solid var(--error); }
 
+  /* Mode Selector */
+  .mode-selector { margin-bottom: 20px; }
+  .mode-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mode-opt {
+    background: var(--surface); border: 2px solid var(--border2);
+    border-radius: 12px; padding: 16px 20px; cursor: pointer;
+    transition: all 0.18s; display: flex; align-items: flex-start; gap: 14px;
+  }
+  .mode-opt:hover { border-color: var(--accent); background: var(--accent-light); }
+  .mode-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px rgba(26,111,212,0.12); }
+  .mode-opt-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .mode-opt-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); }
+  .mode-opt-sub { font-size: 11px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+  .mode-badge { display: inline-block; font-size: 9px; font-family: var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(26,111,212,0.2); margin-left: 6px; vertical-align: middle; }
+
+  /* Generic mode panel */
+  .generic-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px; margin-top: 18px; box-shadow: var(--shadow); display: none; }
+  .generic-panel.visible { display: block; }
+
   /* FCRA Selector */
   .fcra-selector { margin-top: 18px; }
   .fcra-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
@@ -294,7 +335,7 @@
       <div class="logo-sub">CIIE Initiatives · ERPNext → Kotak Bank</div>
     </div>
   </div>
-  <div class="badge">v1.4</div>
+  <div class="badge">v1.5</div>
 </header>
 
 <main>
@@ -316,8 +357,8 @@
   <div class="upload-zone" id="uploadZone">
     <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
     <div class="upload-icon">📊</div>
-    <div class="upload-title">Drop ERPNext Vendor Payment Report here</div>
-    <div class="upload-sub">or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> sheet required</div>
+    <div class="upload-title" id="uploadTitle">Drop ERPNext Vendor Payment Report here</div>
+    <div class="upload-sub" id="uploadSub">or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> sheet required</div>
     <div class="upload-formats">
       <span class="fmt-tag">.XLSX</span>
       <span class="fmt-tag">.XLS</span>
@@ -325,6 +366,52 @@
   </div>
 
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <!-- MODE SELECTOR -->
+  <div class="mode-selector" id="modeSelector">
+    <div class="mode-label">Select Converter Mode</div>
+    <div class="mode-options">
+      <div class="mode-opt selected" id="modeErp" onclick="setMode('erp')">
+        <div class="mode-opt-icon">🔄</div>
+        <div>
+          <div class="mode-opt-title">ERP Mode <span class="mode-badge">default</span></div>
+          <div class="mode-opt-sub">Upload ERPNext Vendor Payment Report · auto field mapping, sanitization, email template</div>
+        </div>
+      </div>
+      <div class="mode-opt" id="modeGeneric" onclick="setMode('generic')">
+        <div class="mode-opt-icon">📄</div>
+        <div>
+          <div class="mode-opt-title">Generic Mode <span class="mode-badge">KMBL</span></div>
+          <div class="mode-opt-sub">Upload any pre-formatted Kotak XLS · reads columns as-is, auto date formatting, outputs TXT directly</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERIC MODE PANEL -->
+  <div class="generic-panel" id="genericPanel">
+    <div class="config-title">Generic Conversion Settings</div>
+    <div class="config-grid">
+      <div class="field-group">
+        <label>Header Row</label>
+        <select id="genHasHeader">
+          <option value="yes">YES — skip first row</option>
+          <option value="no">NO — convert from row 1</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Number of Columns</label>
+        <input type="number" id="genCols" value="49" min="1" max="100">
+      </div>
+      <div class="field-group">
+        <label>Sheet Name (blank = first sheet)</label>
+        <input type="text" id="genSheet" placeholder="e.g. Sheet1">
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:10px 14px;background:var(--accent-light);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--accent);">
+      ℹ Reads each row as tilde-delimited fields. Date cells auto-formatted to DD/MM/YYYY. No field mapping or sanitization applied.
+    </div>
+  </div>
 
   <!-- STEP 1: FCRA Selector -->
   <div class="fcra-selector" id="fcraSelector">
@@ -415,6 +502,7 @@
       <div class="preview-header-left">
         <div class="preview-title">Converted Payment Rows</div>
         <div class="count-badge" id="rowCount">0 rows</div>
+        <span class="edit-badge" id="editBadge">edited</span>
       </div>
       <button class="reset-btn" id="resetBtn">✕ Reset</button>
     </div>
@@ -503,9 +591,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
-let parsedRows = [];
-let fileName   = '';
-let isFcra     = false;
+let parsedRows  = [];
+let genericRows = [];   // raw rows for generic mode
+let fileName    = '';
+let isFcra      = false;
 
 const KOTAK_HEADERS = [
   'Client_Code','Product_Code','Payment_Type','Payment_Ref_No.','Payment_Date',
@@ -519,6 +608,40 @@ const KOTAK_HEADERS = [
   'Enrichment_11','Enrichment_12','Enrichment_13','Enrichment_14','Enrichment_15',
   'Enrichment_16','Enrichment_17','Enrichment_18','Enrichment_19','Enrichment_20'
 ];
+
+// ─── Mode Selector ───────────────────────────────────────────────────────────
+var currentMode = 'erp';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeErp').classList.toggle('selected', mode === 'erp');
+  document.getElementById('modeGeneric').classList.toggle('selected', mode === 'generic');
+
+  var genericPanel = document.getElementById('genericPanel');
+  var fcraSelector = document.getElementById('fcraSelector');
+  var configPanel  = document.getElementById('configPanel');
+
+  if (mode === 'generic') {
+    genericPanel.classList.add('visible');
+    fcraSelector.style.display = 'none';
+    if (!document.getElementById('configPanel').classList.contains('visible')) {
+      configPanel.style.display = 'none';
+    }
+    document.getElementById('uploadTitle').textContent = 'Drop any Kotak-format Excel file here';
+    document.getElementById('uploadSub').innerHTML = 'or click to browse · any .xls or .xlsx with Kotak payment columns';
+  } else {
+    genericPanel.classList.remove('visible');
+    fcraSelector.style.display = '';
+    configPanel.style.display = '';
+    document.getElementById('uploadTitle').textContent = 'Drop ERPNext Vendor Payment Report here';
+    document.getElementById('uploadSub').innerHTML = 'or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> sheet required';
+  }
+
+  // Reset if already loaded
+  if (parsedRows.length || genericRows.length) {
+    resetAll();
+  }
+}
 
 // ─── FCRA Selector ──────────────────────────────────────────────────────────
 function setFcra(fcra) {
@@ -652,12 +775,17 @@ function processFile(file) {
   reader.onload = function(e) {
     try {
       setProgress(50);
-      var wb    = XLSX.read(e.target.result, {type:'array', cellDates:true});
-      var sheet = wb.Sheets['Vendor Invoice'] || wb.Sheets[wb.SheetNames[0]];
+      var wb = XLSX.read(e.target.result, {type:'array', cellDates:true});
       setProgress(75);
-      var rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
-      setProgress(90);
-      parseERP(rows);
+
+      if (currentMode === 'generic') {
+        processGeneric(wb);
+      } else {
+        var sheet = wb.Sheets['Vendor Invoice'] || wb.Sheets[wb.SheetNames[0]];
+        var rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
+        setProgress(90);
+        parseERP(rows);
+      }
       setProgress(100);
     } catch(err) {
       showToast('Error: ' + err.message, 'error');
@@ -665,6 +793,97 @@ function processFile(file) {
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+// ─── Generic Mode: KMBL-style pass-through conversion ────────────────────────
+function processGeneric(wb) {
+  var genSheet   = document.getElementById('genSheet').value.trim();
+  var hasHeader  = document.getElementById('genHasHeader').value === 'yes';
+  var numCols    = parseInt(document.getElementById('genCols').value) || 49;
+
+  var sheet = genSheet ? wb.Sheets[genSheet] : wb.Sheets[wb.SheetNames[0]];
+  if (!sheet) { showToast('Sheet not found', 'error'); return; }
+
+  // Get raw rows as arrays (preserving types)
+  var rawRows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:'', raw:false, dateNF:'DD/MM/YYYY'});
+
+  var startIdx = hasHeader ? 1 : 0;
+  genericRows  = rawRows.slice(startIdx).filter(function(row){
+    return row.some(function(cell){ return String(cell||'').trim() !== ''; });
+  });
+
+  if (!genericRows.length) {
+    showToast('No data rows found', 'error');
+    return;
+  }
+
+  // Build TXT immediately
+  var lines = genericRows.map(function(row){
+    var fields = [];
+    for (var j = 0; j < numCols; j++) {
+      var val = row[j] !== undefined ? row[j] : '';
+      // If it looks like a date object or date string, format DD/MM/YYYY
+      val = formatCellValue(val);
+      fields.push(val);
+    }
+    return fields.join('~');
+  });
+
+  // Show generic results
+  document.getElementById('rowCount').textContent = genericRows.length + ' rows';
+  document.getElementById('previewPanel').classList.add('visible');
+  document.getElementById('actions').classList.add('visible');
+
+  // Show in preview as read-only table
+  renderGenericPreview(genericRows, numCols);
+
+  // Store lines for download
+  genericRows._txtLines = lines;
+
+  // Summary
+  document.getElementById('sumRows').textContent    = genericRows.length;
+  document.getElementById('sumAmount').textContent  = '—';
+  document.getElementById('sumTds2').textContent    = '—';
+  document.getElementById('sumTdsRows').textContent = '—';
+  document.getElementById('summaryBar').classList.add('visible');
+
+  showToast('Loaded ' + genericRows.length + ' rows (Generic mode)');
+}
+
+function formatCellValue(val) {
+  if (val === null || val === undefined) return '';
+  var s = String(val).trim();
+  if (!s) return '';
+  // XLSX raw:false already formats dates as DD/MM/YYYY via dateNF
+  // But check for JS Date objects just in case
+  if (val instanceof Date) {
+    return String(val.getDate()).padStart(2,'0') + '/' +
+           String(val.getMonth()+1).padStart(2,'0') + '/' + val.getFullYear();
+  }
+  return s;
+}
+
+function renderGenericPreview(rows, numCols) {
+  var tbody = document.getElementById('previewBody');
+  // Show first 8 columns as preview
+  var previewCols = Math.min(numCols, 8);
+  var thead = document.querySelector('#previewPanel thead tr');
+  if (thead) {
+    var headers = ['#'];
+    for (var h = 0; h < previewCols; h++) headers.push('Col ' + (h+1));
+    if (numCols > previewCols) headers.push('...' + (numCols - previewCols) + ' more');
+    thead.innerHTML = headers.map(function(h){ return '<th>' + h + '</th>'; }).join('');
+  }
+
+  tbody.innerHTML = rows.slice(0, 50).map(function(row, i){
+    var cells = ['<td class="td-muted">' + (i+1) + '</td>'];
+    for (var j = 0; j < previewCols; j++) {
+      var v = formatCellValue(row[j] !== undefined ? row[j] : '');
+      cells.push('<td class="td-muted">' + trunc(v, 20) + '</td>');
+    }
+    if (numCols > previewCols) cells.push('<td class="td-muted">…</td>');
+    return '<tr>' + cells.join('') + '</tr>';
+  }).join('');
 }
 
 // ─── Parse ERP ───────────────────────────────────────────────────────────────
@@ -748,24 +967,75 @@ function buildEmails(r, ccEmails) {
   return sanitizeEmail(unique.join(','));
 }
 
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function markEdited(input, rowIdx, field) {
+  var orig = parsedRows[rowIdx]['_orig_' + field];
+  if (orig === undefined) orig = parsedRows[rowIdx][field];
+  input.classList.toggle('cell-edited', input.value !== String(orig||''));
+  var anyEdited = document.querySelectorAll('.cell-edited').length > 0;
+  document.getElementById('editBadge').classList.toggle('visible', anyEdited);
+}
+
+function readTableEdits() {
+  // Read all editable cells back into parsedRows before building output
+  parsedRows.forEach(function(r, i) {
+    var get = function(id){ var el=document.getElementById(id+i); return el?el.value:null; };
+    if (get('cel_name')   !== null) r._name   = get('cel_name');
+    if (get('cel_ifsc')   !== null) r._ifsc   = get('cel_ifsc');
+    if (get('cel_accNo')  !== null) r._accNo  = get('cel_accNo');
+    if (get('cel_amount') !== null) r._amount = parseFloat(get('cel_amount'))||r.amount;
+    if (get('cel_date')   !== null) r._date   = get('cel_date');
+    if (get('cel_debit')  !== null) r._debit  = get('cel_debit');
+    if (get('cel_enr1')   !== null) r._enr1   = get('cel_enr1');
+    if (get('cel_enr2')   !== null) r._enr2   = get('cel_enr2');
+  });
+}
+
+function onCellEdit(el) {
+  var i     = parseInt(el.getAttribute('data-row'));
+  var field = el.getAttribute('data-field');
+  var key   = '_' + field;
+  parsedRows[i][key] = el.value;
+  el.classList.add('cell-edited');
+  document.getElementById('editBadge').classList.add('visible');
+}
+
 function renderPreview() {
   var cfg   = getConfig();
   var tbody = document.getElementById('previewBody');
   tbody.innerHTML = parsedRows.map(function(r, i){
-    var payDate  = cfg.payDate;
-    var suppName = sanitize(cleanVendor(r.supplier));
-    var enr1     = getEnr1(r);
-    var enr2     = sanitize(r.purpose);
+    var payDate  = r._date  || cfg.payDate;
+    var suppName = r._name  || sanitize(cleanVendor(r.supplier));
+    var enr1     = r._enr1  || getEnr1(r);
+    var enr2     = r._enr2  || sanitize(r.purpose);
+    var ifsc     = r._ifsc  || r.ifsc;
+    var accNo    = r._accNo || r.accNo;
+    var amount   = r._amount|| r.amount;
+    var debit    = r._debit !== undefined ? r._debit : cfg.debitAc;
+
+    function inp(id, val, cls, title) {
+      var field = id.replace('cel_','');
+      return '<input id="' + id + i + '" class="cell-input ' + (cls||'') + '" ' +
+        'value="' + esc(val) + '" ' +
+        (title ? 'title="' + esc(title) + '" ' : '') +
+        'data-row="' + i + '" data-field="' + field + '" ' +
+        'oninput="onCellEdit(this)"' +
+        '>';
+    }
+
     return '<tr>' +
-      '<td class="td-muted">' + (i+1) + '</td>' +
-      '<td>' + trunc(suppName,35) + '</td>' +
-      '<td>' + r.ifsc + '</td>' +
-      '<td>' + r.accNo + '</td>' +
-      '<td class="td-amount">' + fmtAmt(r.amount) + '</td>' +
-      '<td class="td-muted">' + payDate + '</td>' +
-      '<td class="td-muted">' + cfg.debitAc + '</td>' +
-      '<td class="td-muted" title="' + enr1 + '">' + trunc(enr1,28) + '</td>' +
-      '<td class="td-muted" title="' + enr2 + '">' + trunc(enr2,52) + '</td>' +
+      '<td style="padding:10px 14px;color:var(--text2);min-width:30px;">' + (i+1) + '</td>' +
+      '<td style="min-width:180px;">' + inp('cel_name',   suppName, '') + '</td>' +
+      '<td style="min-width:110px;">' + inp('cel_ifsc',   ifsc,     'cell-muted') + '</td>' +
+      '<td style="min-width:130px;">' + inp('cel_accNo',  accNo,    'cell-muted') + '</td>' +
+      '<td style="min-width:100px;">' + inp('cel_amount', amount,   'cell-amount') + '</td>' +
+      '<td style="min-width:100px;">' + inp('cel_date',   payDate,  'cell-muted') + '</td>' +
+      '<td style="min-width:110px;">' + inp('cel_debit',  debit,    'cell-muted') + '</td>' +
+      '<td style="min-width:140px;">' + inp('cel_enr1',   enr1,     'cell-muted', enr1) + '</td>' +
+      '<td style="min-width:240px;">' + inp('cel_enr2',   enr2,     'cell-muted', enr2) + '</td>' +
       '</tr>';
   }).join('');
 
@@ -958,26 +1228,32 @@ function renderEmailTemplate() {
 
 // ─── Build Kotak XLS Row (49 columns) ───────────────────────────────────────
 function buildKotakRow(r, cfg) {
+  readTableEdits();
   var emails   = buildEmails(r, cfg.emails);
-  var suppName = sanitize(cleanVendor(r.supplier));
-  var enr1     = getEnr1(r);
-  var enr2     = sanitize(r.purpose);
+  var suppName = sanitize(cleanVendor(r._name || r.supplier));
+  var enr1     = r._enr1 || getEnr1(r);
+  var enr2     = r._enr2 || sanitize(r.purpose);
+  var ifsc     = r._ifsc  || r.ifsc;
+  var accNo    = r._accNo || r.accNo;
+  var amount   = r._amount|| r.amount;
+  var debit    = (r._debit !== undefined && r._debit !== '') ? r._debit : cfg.debitAc;
+  var payDate  = r._date  || cfg.payDate;
 
   var row = new Array(49).fill('');
   row[0]  = cfg.clientCode;
   row[1]  = cfg.productCode;
   row[2]  = cfg.paymentType;
   row[3]  = '';
-  row[4]  = cfg.payDate;
+  row[4]  = payDate;
   row[5]  = '';
-  row[6]  = cfg.debitAc;
-  row[7]  = r.amount;
+  row[6]  = debit;
+  row[7]  = amount;
   row[8]  = cfg.bankCode;
   row[9]  = '';
   row[10] = suppName;
   row[11] = '';
-  row[12] = r.ifsc;
-  row[13] = r.accNo;
+  row[12] = ifsc;
+  row[13] = accNo;
   row[21] = emails;
   row[29] = enr1;
   row[30] = enr2;
@@ -986,23 +1262,29 @@ function buildKotakRow(r, cfg) {
 
 // ─── Build TXT Lines (49 tilde-delimited fields) ─────────────────────────────
 function buildTxtLines() {
+  readTableEdits();
   var cfg = getConfig();
   return parsedRows.map(function(r){
     var emails   = buildEmails(r, cfg.emails);
-    var suppName = sanitize(cleanVendor(r.supplier));
-    var enr1     = getEnr1(r);
-    var enr2     = sanitize(r.purpose);
+    var suppName = sanitize(cleanVendor(r._name || r.supplier));
+    var enr1     = r._enr1 || getEnr1(r);
+    var enr2     = r._enr2 || sanitize(r.purpose);
+    var ifsc     = r._ifsc  || r.ifsc;
+    var accNo    = r._accNo || r.accNo;
+    var amount   = r._amount|| r.amount;
+    var debit    = (r._debit !== undefined && r._debit !== '') ? r._debit : cfg.debitAc;
+    var payDate  = r._date  || cfg.payDate;
     var fields   = new Array(49).fill('');
     fields[0]  = cfg.clientCode;
     fields[1]  = cfg.productCode;
     fields[2]  = cfg.paymentType;
-    fields[4]  = cfg.payDate;
-    fields[6]  = cfg.debitAc;
-    fields[7]  = r.amount;
+    fields[4]  = payDate;
+    fields[6]  = debit;
+    fields[7]  = amount;
     fields[8]  = cfg.bankCode;
     fields[10] = suppName;
-    fields[12] = r.ifsc;
-    fields[13] = r.accNo;
+    fields[12] = ifsc;
+    fields[13] = accNo;
     fields[21] = emails;
     fields[29] = enr1;
     fields[30] = enr2;
@@ -1017,21 +1299,34 @@ function stamp() {
 }
 
 function downloadXls() {
+  if (currentMode === 'generic') {
+    showToast('Generic mode: use Download TXT for bank upload', 'error');
+    return;
+  }
   var cfg  = getConfig();
   var data = [KOTAK_HEADERS].concat(parsedRows.map(function(r){ return buildKotakRow(r, cfg); }));
   var ws   = XLSX.utils.aoa_to_sheet(data);
-  var wb   = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Payments');
-  XLSX.writeFile(wb, 'Kotak_Pmt_' + (fileName||stamp()) + '.xls');
+  var wb2  = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb2, ws, 'Payments');
+  XLSX.writeFile(wb2, 'Kotak_Pmt_' + (fileName||stamp()) + '.xls');
   showToast('Kotak XLS downloaded');
 }
 
 function downloadTxt() {
-  var blob = new Blob([buildTxtLines().join('\n')], {type:'text/plain'});
+  var lines, outName;
+  if (currentMode === 'generic') {
+    if (!genericRows || !genericRows._txtLines) { showToast('No data to download', 'error'); return; }
+    lines   = genericRows._txtLines;
+    outName = fileName || stamp();
+  } else {
+    lines   = buildTxtLines();
+    outName = 'Kotak_Pmt_' + (fileName||stamp());
+  }
+  var blob = new Blob([lines.join('\n')], {type:'text/plain'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href   = url;
-  a.download = 'Kotak_Pmt_' + (fileName||stamp()) + '.txt';
+  a.download = outName + '.txt';
   a.click();
   URL.revokeObjectURL(url);
   showToast('Kotak TXT downloaded');
@@ -1044,14 +1339,24 @@ document.getElementById('btnBoth').addEventListener('click', function(){
   downloadXls(); setTimeout(downloadTxt, 500);
 });
 
-document.getElementById('resetBtn').addEventListener('click', function(){
-  parsedRows = []; fileInput.value = '';
+function resetAll() {
+  parsedRows = []; genericRows = []; fileInput.value = '';
   ['previewPanel','actions','summaryBar','issuesPanel','mappingSection',
    'configPanel','emailTemplatePanel'].forEach(function(id){
     document.getElementById(id).classList.remove('visible');
   });
   document.getElementById('txtPreview').classList.remove('visible');
   document.getElementById('previewBody').innerHTML = '';
+  // Restore ERP table headers
+  var thead = document.querySelector('#previewPanel thead tr');
+  if (thead) {
+    thead.innerHTML = '<th>#</th><th>Beneficiary Name</th><th>IFSC</th><th>Account No</th>' +
+      '<th>Net Payable</th><th>Pay Date</th><th>Debit A/C</th><th>Enr-1 (Inv No)</th><th>Enrichment-2 (Purpose)</th>';
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', function(){
+  resetAll();
   showToast('Reset — upload a new file', 'error');
 });
 
