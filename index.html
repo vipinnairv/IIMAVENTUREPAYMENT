@@ -3,52 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kotak Pay Converter | CIIE Initiatives (IIMA Ventures)</title>
+<title>Kotak Pay Converter | by Vipin Nair</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f6fa;
+    --bg: #f5f7fa;
     --surface: #ffffff;
-    --surface2: #f0f3f8;
-    --border: #dde3ee;
-    --border2: #c8d0e0;
-    --accent: #1a6fd4;
-    --accent-light: #e8f0fc;
-    --accent2: #0b9e7a;
-    --accent2-light: #e4f7f2;
-    --text: #1a2035;
+    --surface2: #f0f4f3;
+    --border: #e0e6e4;
+    --border2: #c5ceca;
+    --accent: #00b386;
+    --accent-light: #e6f9f3;
+    --accent2: #0066cc;
+    --accent2-light: #e8f0fc;
+    --accent3: #e05c1a;
+    --text: #1a1a2e;
     --text2: #4a5568;
-    --text3: #8a9ab8;
-    --success: #0b9e7a;
-    --error: #c0392b;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans', sans-serif;
-    --shadow: 0 1px 4px rgba(26,48,96,0.07), 0 4px 16px rgba(26,48,96,0.05);
-    --shadow-md: 0 2px 8px rgba(26,48,96,0.10), 0 8px 24px rgba(26,48,96,0.07);
+    --text3: #8a9ab0;
+    --success: #00b386;
+    --warning: #d97706;
+    --error: #dc3545;
+    --mono: 'DM Mono', 'IBM Plex Mono', 'Consolas', monospace;
+    --sans: 'Inter', 'DM Sans', 'IBM Plex Sans', system-ui, sans-serif;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
 
   header {
-    border-bottom: 1px solid var(--border);
+    border-bottom: none;
     padding: 0 40px;
     display: flex; align-items: center; justify-content: space-between;
     height: 60px;
-    background: var(--surface);
-    box-shadow: 0 1px 0 var(--border), 0 2px 8px rgba(26,48,96,0.04);
+    background: #1a1a2e;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     position: sticky; top: 0; z-index: 100;
+    border-top: 3px solid var(--accent);
   }
   .logo { display: flex; align-items: center; gap: 12px; }
   .logo-icon {
-    height: 40px; display: flex; align-items: center;
+    display: flex; align-items: center; flex-shrink: 0;
   }
-  .logo-text { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.04em; }
-  .logo-sub  { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+  .logo-text { font-family: var(--mono); font-size: 13px; font-weight: 600; color: #ffffff; letter-spacing: 0.06em; }
+  .logo-sub  { font-size: 11px; color: rgba(255,255,255,0.5); font-family: var(--mono); margin-top: 1px; }
   .badge {
     font-family: var(--mono); font-size: 10px; padding: 3px 10px;
     border-radius: 20px; border: 1px solid var(--accent);
-    color: var(--accent); background: var(--accent-light); letter-spacing: 0.08em;
+    color: var(--accent); background: rgba(0,179,134,0.1); letter-spacing: 0.08em;
   }
 
   main { max-width: 1120px; margin: 0 auto; padding: 36px 40px 80px; }
@@ -80,7 +83,7 @@
   }
   .upload-zone:hover, .upload-zone.drag-over {
     border-color: var(--accent); background: var(--accent-light);
-    box-shadow: 0 0 0 4px rgba(26,111,212,0.08);
+    box-shadow: 0 0 0 4px rgba(0,179,134,0.08);
   }
   .upload-zone.drag-over { transform: scale(1.008); }
   .upload-icon {
@@ -126,7 +129,7 @@
     font-size: 12px; padding: 9px 12px; outline: none;
     transition: border-color 0.18s, box-shadow 0.18s; width: 100%;
   }
-  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,111,212,0.10); background: #fff; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,179,134,0.12); background: #fff; }
   select option { background: #fff; }
 
   /* Summary */
@@ -158,7 +161,7 @@
   }
   .preview-header-left { display: flex; align-items: center; gap: 12px; }
   .preview-title { font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; }
-  .count-badge { background: var(--accent-light); border: 1px solid rgba(26,111,212,0.2); color: var(--accent); font-family: var(--mono); font-size: 10px; padding: 2px 10px; border-radius: 20px; }
+  .count-badge { background: var(--accent-light); border: 1px solid rgba(0,179,134,0.25); color: var(--accent); font-family: var(--mono); font-size: 10px; padding: 2px 10px; border-radius: 20px; }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
   th {
@@ -204,7 +207,7 @@
   .edit-badge.visible { display: inline; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: transparent; }
-  .td-amount { color: var(--accent2); font-weight: 600; }
+  .td-amount { color: var(--accent); font-weight: 600; }
   .td-muted  { color: var(--text2); }
 
   /* TXT preview */
@@ -226,10 +229,10 @@
     cursor: pointer; transition: all 0.16s;
     display: flex; align-items: center; gap: 7px; letter-spacing: 0.04em;
   }
-  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(26,111,212,0.22); }
-  .btn-primary:hover { background: #1254a8; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(26,111,212,0.28); }
-  .btn-secondary { background: var(--accent2); color: #fff; box-shadow: 0 2px 8px rgba(11,158,122,0.18); }
-  .btn-secondary:hover { background: #0a8568; transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,179,134,0.25); }
+  .btn-primary:hover { background: #009973; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,179,134,0.35); }
+  .btn-secondary { background: var(--accent2); color: #fff; box-shadow: 0 2px 8px rgba(0,102,204,0.2); }
+  .btn-secondary:hover { background: #0055aa; transform: translateY(-1px); }
   .btn-outline { background: var(--surface); color: var(--text2); border: 1px solid var(--border2); }
   .btn-outline:hover { border-color: var(--text2); color: var(--text); background: var(--surface2); }
 
@@ -261,7 +264,7 @@
   }
   .reset-btn:hover { color: var(--error); background: #fef5f5; }
   .refresh-btn {
-    background: var(--accent-light); border: 1px solid rgba(26,111,212,0.25);
+    background: var(--accent-light); border: 1px solid rgba(0,179,134,0.3);
     color: var(--accent); font-family: var(--mono); font-size: 11px;
     cursor: pointer; padding: 4px 10px; border-radius: 6px;
     transition: all 0.15s; display: flex; align-items: center; gap: 4px;
@@ -323,6 +326,73 @@
   }
   .file-tag .ft-icon { font-size: 12px; }
   .file-tag .ft-count { color: var(--accent); font-weight: 600; }
+
+  /* Help button & panel */
+  .help-btn {
+    background: transparent; border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.8); font-family: var(--mono); font-size: 11px;
+    font-weight: 600; padding: 3px 12px; border-radius: 20px;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
+  }
+  .help-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .help-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; justify-content: center; align-items: flex-start;
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+  }
+  .help-overlay.visible { display: flex; }
+  .help-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; max-width: 720px; width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15); position: relative;
+    margin-bottom: 40px;
+  }
+  .help-header {
+    padding: 20px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border-radius: 16px 16px 0 0;
+  }
+  .help-header h2 { font-family: var(--mono); font-size: 16px; color: var(--text); margin: 0; }
+  .help-close {
+    background: none; border: none; font-size: 20px; color: var(--text3);
+    cursor: pointer; padding: 4px 8px; border-radius: 6px;
+  }
+  .help-close:hover { color: var(--error); background: #fef5f5; }
+  .help-body { padding: 28px; }
+  .help-section { margin-bottom: 28px; }
+  .help-section:last-child { margin-bottom: 0; }
+  .help-section h3 {
+    font-family: var(--mono); font-size: 13px; color: var(--accent);
+    margin: 0 0 12px; letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .help-section h3 .h-icon { font-size: 16px; }
+  .help-section p, .help-section li {
+    font-size: 13px; color: var(--text2); line-height: 1.8; margin: 0 0 6px;
+  }
+  .help-section ol, .help-section ul { padding-left: 20px; margin: 8px 0; }
+  .help-section li { margin-bottom: 8px; }
+  .help-tag {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    padding: 2px 8px; border-radius: 4px; vertical-align: middle;
+  }
+  .help-tag-blue { background: #e8f0fc; color: #1a6fd4; }
+  .help-tag-green { background: #e4f7f2; color: #0b9e7a; }
+  .help-tag-orange { background: #fef3e2; color: #b45309; }
+  .help-tag-red { background: #fef5f5; color: #c0392b; }
+  .help-tip {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
+    padding: 10px 14px; font-size: 12px; color: var(--text2);
+    font-family: var(--mono); margin: 10px 0; line-height: 1.7;
+  }
+  .help-grid {
+    display: grid; grid-template-columns: 120px 1fr; gap: 4px 14px;
+    font-size: 12px; font-family: var(--mono); margin: 10px 0;
+  }
+  .help-grid dt { color: var(--text3); }
+  .help-grid dd { color: var(--text); margin: 0; }
 
   /* Mode Selector */
   .mode-selector { margin-bottom: 20px; }
@@ -390,21 +460,24 @@
 
 <header>
   <div class="logo">
-    <div class="logo-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 40" height="40" width="168" role="img" aria-label="IIMA Ventures"><rect x="0" y="2" width="7" height="36" rx="1" fill="#C8102E"/><text x="14" y="26" font-family="Georgia,'Times New Roman',serif" font-size="24" font-weight="700" fill="#1a2035" letter-spacing="0.5">IIMA</text><text x="15" y="37" font-family="Arial,Helvetica,sans-serif" font-size="9.5" font-weight="400" fill="#6b7280" letter-spacing="3.2">VENTURES</text></svg>
+    <div class="logo-icon" style="height:auto;">
+      <span style="font-size:22px;">💳</span>
     </div>
     <div style="margin-left:4px;">
       <div class="logo-text">KOTAK PAY CONVERTER</div>
-      <div class="logo-sub">CIIE Initiatives (IIMA Ventures) · ERPNext → Kotak Bank</div>
+      <div class="logo-sub">ERPNext → Kotak Bank Payment File</div>
     </div>
   </div>
-  <div class="badge">v1.0</div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div class="badge">v1.0</div>
+    <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
+  </div>
 </header>
 
 <main>
   <div class="hero">
     <h1>ERP Vendor Report <span>→ Kotak Payment File</span></h1>
-    <p>CIIE Initiatives (IIMA Ventures) · Upload your ERPNext Vendor Payment Report · get Kotak-ready XLS and TXT instantly</p>
+    <p>Upload your ERPNext Vendor Payment Report · get Kotak-ready XLS and TXT instantly</p>
   </div>
 
   <div class="flow">
@@ -682,9 +755,165 @@
   </div>
 </main>
 
+<!-- HELP PANEL -->
+<div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)toggleHelp()">
+  <div class="help-panel">
+    <div class="help-header">
+      <h2>How to Use This App</h2>
+      <button class="help-close" onclick="toggleHelp()">&times;</button>
+    </div>
+    <div class="help-body">
+
+      <div class="help-section">
+        <h3><span class="h-icon">1&#xFE0F;&#x20E3;</span> Choose Your Mode</h3>
+        <p>When you open the app, you see two mode options at the top:</p>
+        <ul>
+          <li><span class="help-tag help-tag-blue">ERP MODE</span> — Use this when you have an <strong>ERPNext Vendor Payment Report</strong> or <strong>Expense Claim Report</strong>. The app reads the columns, maps them to Kotak format, and lets you edit before downloading.</li>
+          <li><span class="help-tag help-tag-orange">GENERIC MODE</span> — Use this when you already have a <strong>pre-formatted Kotak Excel file</strong> (like the one made by the old KMBL Excel tool). It just converts the columns to a tilde-separated TXT file. No field mapping.</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">2&#xFE0F;&#x20E3;</span> Select Fund Type</h3>
+        <p>Click <span class="help-tag help-tag-blue">Non-FCRA</span> for regular vendor payments, or <span class="help-tag help-tag-green">FCRA</span> for foreign contribution payments. This is just a label — you must still type the correct Debit A/C number manually.</p>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">3&#xFE0F;&#x20E3;</span> Upload Your File</h3>
+        <p>Drag and drop your Excel file onto the upload area, or click to browse. You can upload:</p>
+        <ul>
+          <li><strong>Vendor Payment Report</strong> (.xlsx) — detected by sheet name "Vendor Invoice"</li>
+          <li><strong>Expense Claim Report</strong> (.xlsx) — detected by sheet name "Expense Claim" or column "Employee Name"</li>
+          <li><strong>Multiple files</strong> — select more than one file at once</li>
+        </ul>
+        <div class="help-tip">If you already have data loaded and upload another file, a popup asks:<br><strong>+ Add to existing</strong> = append new rows below current ones<br><strong>Replace all</strong> = clear everything and load only the new file</div>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">4&#xFE0F;&#x20E3;</span> Set the Payment Date</h3>
+        <p>This is the most important field! The date defaults to <strong>today</strong>.</p>
+        <div class="help-tip" style="border-left-color:#c0392b;">
+          <span class="help-tag help-tag-red">WARNING</span> If you set a past date, Kotak Bank will reject the file with <strong>"Backdated Transaction Date"</strong> error. Always use today or a future date.
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">5&#xFE0F;&#x20E3;</span> Fill the Debit Account</h3>
+        <p>Type your Kotak Debit A/C number in the configuration panel. This number auto-fills into all rows. You only need to type it once.</p>
+        <div class="help-tip">If you manually edit a specific row's Debit A/C in the table below, that row keeps your manual value even if you change the config later.</div>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">6&#xFE0F;&#x20E3;</span> Review the Converted Rows</h3>
+        <p>After upload, all rows appear in an editable table. You can click on <strong>any cell</strong> to change its value — Beneficiary Name, IFSC, Account No, Amount, Date, everything.</p>
+        <ul>
+          <li><span class="help-tag help-tag-blue">NEFT</span> and <span class="help-tag help-tag-green">IFT</span> — Each row has its own payment type dropdown. If the beneficiary bank is Kotak (IFSC starts with KKBK), it auto-selects IFT and sets IFSC to KKBK0000958.</li>
+          <li>Edited cells turn <strong style="background:#fffbe6;padding:1px 4px;">yellow</strong> so you can see what changed.</li>
+          <li>Each row shows <span class="help-tag help-tag-blue">VEN</span> or <span class="help-tag help-tag-orange">EXP</span> badge to identify Vendor vs Expense Claim rows.</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">7&#xFE0F;&#x20E3;</span> Use Refresh & Reset</h3>
+        <dl class="help-grid">
+          <dt>&#8634; Refresh</dt>
+          <dd>Clears all manual edits and re-applies the current configuration to all rows. Your uploaded data stays.</dd>
+          <dt>&times; Reset All</dt>
+          <dd>Clears everything — data, config, preview. You start from scratch.</dd>
+        </dl>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">8&#xFE0F;&#x20E3;</span> Download Payment Files</h3>
+        <p>Three download buttons at the bottom:</p>
+        <dl class="help-grid">
+          <dt>Kotak XLS</dt>
+          <dd>49-column Excel file for the Kotak Bank portal.</dd>
+          <dt>Kotak TXT</dt>
+          <dd>Tilde-separated text file (~). Same data, alternate format. This is what the bank actually processes.</dd>
+          <dt>Download Both</dt>
+          <dd>Downloads XLS first, then TXT half a second later.</dd>
+        </dl>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">9&#xFE0F;&#x20E3;</span> Email Approval Template</h3>
+        <p>After uploading, an approval email is auto-generated with a table of all payments. Use it to get payment approval from management.</p>
+        <ul>
+          <li><strong>Copy Email</strong> — copies subject + body to clipboard. Paste into Outlook or Gmail.</li>
+          <li><strong>Download Email as Excel</strong> — downloads the payment table as a separate .xlsx file for attaching to the approval email.</li>
+          <li>Set the <strong>Letter No</strong> field (e.g. 01, 02) in configuration — it feeds into the email subject line.</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">&#x26A0;&#xFE0F;</span> Things That Cause Bank Rejection</h3>
+        <ul>
+          <li><span class="help-tag help-tag-red">Backdated Date</span> — Payment date in the past. Always use today or future.</li>
+          <li><span class="help-tag help-tag-red">Special Characters</span> — Only A-Z, 0-9, space, / and - are allowed in text fields. The app auto-strips everything else.</li>
+          <li><span class="help-tag help-tag-red">Wrong IFSC</span> — If payment type is IFT, IFSC must be KKBK0000958 (Kotak). The app handles this automatically.</li>
+          <li><span class="help-tag help-tag-red">Missing A/C Number</span> — Bank account starting with 0 (e.g. 00123456) must keep the leading zeros. The app preserves them.</li>
+        </ul>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">&#x2139;&#xFE0F;</span> Quick Reference</h3>
+        <dl class="help-grid">
+          <dt>File format</dt>
+          <dd>.xlsx or .xls from ERPNext</dd>
+          <dt>Output format</dt>
+          <dd>49-column Kotak KOTAKSINGLE2 interface</dd>
+          <dt>Delimiter</dt>
+          <dd>Tilde (~) for TXT file</dd>
+          <dt>Date format</dt>
+          <dd>DD/MM/YYYY</dd>
+          <dt>NEFT</dt>
+          <dd>For non-Kotak bank accounts</dd>
+          <dt>IFT</dt>
+          <dd>Kotak-to-Kotak (KKBK IFSC)</dd>
+          <dt>FCRA</dt>
+          <dd>Foreign Contribution (Regulation) Act payments</dd>
+          <dt>Non-FCRA</dt>
+          <dd>Regular domestic payments</dd>
+          <dt>Enrichment-1</dt>
+          <dd>Supplier Invoice Number or Expense Claim ID</dd>
+          <dt>Enrichment-2</dt>
+          <dd>Purpose / narration text</dd>
+        </dl>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:20px 40px;text-align:center;background:var(--surface);">
+  <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2;">
+    <div>Built by <strong style="color:var(--text);">Vipin Nair</strong> · 
+      <a href="mailto:vipinn@iima.ac.in" style="color:var(--accent);text-decoration:none;">vipinn@iima.ac.in</a> · 
+      <a href="tel:+918160203197" style="color:var(--accent);text-decoration:none;">+91 8160203197</a>
+    </div>
+    <div>for <strong style="color:var(--text);">CIIE Initiatives (IIMA Ventures)</strong></div>
+    <div style="margin-top:6px;font-size:10px;color:var(--text3);">&copy; Vipin Nair. All rights reserved.</div>
+  </div>
+</footer>
+
 <div class="toast" id="toast"></div>
 
 <script>
+
+function toggleHelp() {
+  var overlay = document.getElementById('helpOverlay');
+  overlay.classList.toggle('visible');
+  document.body.style.overflow = overlay.classList.contains('visible') ? 'hidden' : '';
+}
+
+// Close help with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var overlay = document.getElementById('helpOverlay');
+    if (overlay.classList.contains('visible')) toggleHelp();
+  }
+});
 
 let parsedRows  = [];
 let genericRows = [];   // raw rows for generic mode
@@ -1478,7 +1707,7 @@ function renderEmailTemplate() {
     '<p>Please approve below <strong>' + fundType + '</strong> payments</p>' +
     '<p><strong>' + fundType + ' Letter No ' + letterNo + '</strong></p><br>' +
     tableHtml +
-    '<br><p>Thanks &amp; Regards,<br>Vipin Nair<br>CIIE Initiatives (IIMA Ventures)</p>' +
+    '<br><p>Thanks &amp; Regards,<br>Vipin Nair</p>' +
     '</div>';
 
   document.getElementById('emailBody').innerHTML = bodyHtml;
@@ -1509,7 +1738,7 @@ function renderEmailTemplate() {
     lines.push('');
     lines.push('Thanks & Regards,');
     lines.push('Vipin Nair');
-    lines.push('CIIE Initiatives (IIMA Ventures)');
+    // org line removed from email copy
 
     navigator.clipboard.writeText(lines.join('\n'))
       .then(function(){ showToast('Email copied to clipboard'); });
