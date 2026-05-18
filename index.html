@@ -41,11 +41,7 @@
   }
   .logo { display: flex; align-items: center; gap: 12px; }
   .logo-icon {
-    height: 38px; display: flex; align-items: center;
-  }
-  .logo-icon img {
-    height: 38px; width: auto; display: block;
-    object-fit: contain;
+    height: 40px; display: flex; align-items: center;
   }
   .logo-text { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.04em; }
   .logo-sub  { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
@@ -284,6 +280,42 @@
   .toast.success { border-left: 3px solid var(--success); }
   .toast.error   { border-left: 3px solid var(--error); }
 
+  /* Import modal */
+  .import-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    display: none; align-items: center; justify-content: center; z-index: 200;
+  }
+  .import-modal-overlay.visible { display: flex; }
+  .import-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 32px; max-width: 420px; width: 90%;
+    box-shadow: var(--shadow-md); text-align: center;
+  }
+  .import-modal h3 { font-family: var(--mono); font-size: 14px; color: var(--text); margin-bottom: 8px; }
+  .import-modal p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .import-modal-btns { display: flex; gap: 10px; justify-content: center; }
+  .import-modal .btn { font-size: 12px; padding: 10px 20px; }
+
+  /* File source badge */
+  .src-badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px;
+    padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em; vertical-align: middle; margin-left: 4px;
+  }
+  .src-vendor { background: #e8f0fc; color: #1a6fd4; }
+  .src-expense { background: #fef3e2; color: #b45309; }
+
+  /* Files loaded list */
+  .files-loaded {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding: 0 4px;
+  }
+  .file-tag {
+    display: flex; align-items: center; gap: 6px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--text2);
+  }
+  .file-tag .ft-icon { font-size: 12px; }
+  .file-tag .ft-count { color: var(--accent); font-weight: 600; }
+
   /* Mode Selector */
   .mode-selector { margin-bottom: 20px; }
   .mode-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
@@ -351,9 +383,7 @@
 <header>
   <div class="logo">
     <div class="logo-icon">
-      <img src="https://iimaventures.com/wp-content/uploads/2024/01/IIMA-Logo.png"
-           alt="IIMA Ventures"
-           onerror="logoFallback()" id="iimaLogo"
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 40" height="40" width="168" role="img" aria-label="IIMA Ventures"><rect x="0" y="2" width="7" height="36" rx="1" fill="#C8102E"/><text x="14" y="26" font-family="Georgia,'Times New Roman',serif" font-size="24" font-weight="700" fill="#1a2035" letter-spacing="0.5">IIMA</text><text x="15" y="37" font-family="Arial,Helvetica,sans-serif" font-size="9.5" font-weight="400" fill="#6b7280" letter-spacing="3.2">VENTURES</text></svg>
     </div>
     <div style="margin-left:4px;">
       <div class="logo-text">KOTAK PAY CONVERTER</div>
@@ -379,15 +409,29 @@
     <div class="flow-step"><div class="dot" style="background:#e05c1a"></div>Kotak TXT</div>
   </div>
 
+  <!-- Import Modal -->
+  <div class="import-modal-overlay" id="importModal">
+    <div class="import-modal">
+      <h3 id="importModalTitle">Import payments</h3>
+      <p id="importModalDesc">You already have rows loaded. What would you like to do?</p>
+      <div class="import-modal-btns">
+        <button class="btn btn-primary" id="btnAppend">+ Add to existing</button>
+        <button class="btn btn-outline" id="btnReplace">Replace all</button>
+        <button class="btn btn-outline" id="btnCancelImport" style="color:var(--text3);">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div class="upload-zone" id="uploadZone">
-    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+    <input type="file" id="fileInput" accept=".xlsx,.xls" multiple style="display:none">
     <div class="upload-icon">📊</div>
-    <div class="upload-title" id="uploadTitle">Drop ERPNext Vendor Payment Report here</div>
-    <div class="upload-sub" id="uploadSub">or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> sheet required</div>
+    <div class="upload-title" id="uploadTitle">Drop Vendor Payment or Expense Claim Report here</div>
+    <div class="upload-sub" id="uploadSub">or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> or <strong style="color:var(--accent3)">Expense Claim</strong> sheet</div>
     <div class="upload-formats">
       <span class="fmt-tag">.XLSX</span>
       <span class="fmt-tag">.XLS</span>
     </div>
+    <div class="files-loaded" id="filesLoaded" style="display:none;"></div>
   </div>
 
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
@@ -621,16 +665,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-function logoFallback() {
-  var el = document.getElementById('iimaLogo');
-  if (el) {
-    el.style.display = 'none';
-    var span = document.createElement('span');
-    span.style.fontSize = '22px';
-    span.textContent = '🏛';
-    el.parentElement.appendChild(span);
-  }
-}
 
 let parsedRows  = [];
 let genericRows = [];   // raw rows for generic mode
@@ -674,8 +708,8 @@ function setMode(mode) {
     genericPanel.classList.remove('visible');
     fcraSelector.style.display = '';
     configPanel.style.display = '';
-    document.getElementById('uploadTitle').textContent = 'Drop ERPNext Vendor Payment Report here';
-    document.getElementById('uploadSub').innerHTML = 'or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> sheet required';
+    document.getElementById('uploadTitle').textContent = 'Drop Vendor Payment or Expense Claim Report here';
+    document.getElementById('uploadSub').innerHTML = 'or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> or <strong style="color:var(--accent3)">Expense Claim</strong> sheet';
   }
 
   // Reset if already loaded
@@ -819,12 +853,39 @@ uploadZone.addEventListener('dragover', function(e){ e.preventDefault(); uploadZ
 uploadZone.addEventListener('dragleave', function(){ uploadZone.classList.remove('drag-over'); });
 uploadZone.addEventListener('drop', function(e){
   e.preventDefault(); uploadZone.classList.remove('drag-over');
-  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+  for (var f = 0; f < e.dataTransfer.files.length; f++) processFile(e.dataTransfer.files[f]);
 });
-fileInput.addEventListener('change', function(){ if(fileInput.files[0]) processFile(fileInput.files[0]); });
+fileInput.addEventListener('change', function(){
+  for (var f = 0; f < fileInput.files.length; f++) {
+    processFile(fileInput.files[f]);
+  }
+});
+
+var pendingFile  = null;
+var loadedFiles  = []; // track loaded files {name, type, count}
 
 function processFile(file) {
   fileName = file.name.replace(/\.[^.]+$/,'');
+
+  if (currentMode === 'generic') {
+    readAndProcess(file, false);
+    return;
+  }
+
+  // ERP mode: if rows already loaded, ask append/replace
+  if (parsedRows.length > 0) {
+    pendingFile = file;
+    document.getElementById('importModalTitle').textContent = 'Import: ' + file.name;
+    document.getElementById('importModalDesc').textContent =
+      'You have ' + parsedRows.length + ' rows loaded. Add new payments or replace?';
+    document.getElementById('importModal').classList.add('visible');
+    return;
+  }
+
+  readAndProcess(file, false);
+}
+
+function readAndProcess(file, append) {
   setProgress(20);
   var reader = new FileReader();
   reader.onload = function(e) {
@@ -835,11 +896,26 @@ function processFile(file) {
 
       if (currentMode === 'generic') {
         processGeneric(wb);
-      } else {
-        var sheet = wb.Sheets['Vendor Invoice'] || wb.Sheets[wb.SheetNames[0]];
-        var rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
+        setProgress(100);
+        return;
+      }
+
+      // Auto-detect file type by sheet names or column headers
+      var fileType = detectFileType(wb);
+      var sheet, rows;
+
+      if (fileType === 'expense') {
+        sheet = wb.Sheets['Expense Claim'] || wb.Sheets[wb.SheetNames[0]];
+        rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
         setProgress(90);
-        parseERP(rows);
+        var newRows = parseExpenseClaim(rows);
+        mergeRows(newRows, append, file.name, 'expense', newRows.length);
+      } else {
+        sheet = wb.Sheets['Vendor Invoice'] || wb.Sheets[wb.SheetNames[0]];
+        rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
+        setProgress(90);
+        var newRows2 = parseVendorInvoice(rows);
+        mergeRows(newRows2, append, file.name, 'vendor', newRows2.length);
       }
       setProgress(100);
     } catch(err) {
@@ -849,6 +925,68 @@ function processFile(file) {
   };
   reader.readAsArrayBuffer(file);
 }
+
+function detectFileType(wb) {
+  // Check sheet names first
+  if (wb.SheetNames.indexOf('Expense Claim') >= 0) return 'expense';
+  if (wb.SheetNames.indexOf('Vendor Invoice') >= 0) return 'vendor';
+
+  // Check column headers of first sheet
+  var sheet = wb.Sheets[wb.SheetNames[0]];
+  var headers = XLSX.utils.sheet_to_json(sheet, {header:1})[0] || [];
+  var headerStr = headers.join(',').toLowerCase();
+
+  if (headerStr.indexOf('employee name') >= 0 || headerStr.indexOf('expense claim') >= 0 ||
+      headerStr.indexOf('total sanctioned amount') >= 0) return 'expense';
+
+  return 'vendor'; // default
+}
+
+function mergeRows(newRows, append, fname, ftype, count) {
+  if (append) {
+    parsedRows = parsedRows.concat(newRows);
+  } else {
+    parsedRows = newRows;
+    loadedFiles = [];
+  }
+
+  loadedFiles.push({name: fname, type: ftype, count: count});
+  renderFileTags();
+  renderIssues([]);
+  renderPreview();
+  renderSummary();
+  showUI();
+}
+
+function renderFileTags() {
+  var container = document.getElementById('filesLoaded');
+  if (!loadedFiles.length) { container.style.display = 'none'; return; }
+  container.style.display = 'flex';
+  container.innerHTML = loadedFiles.map(function(f){
+    var icon = f.type === 'expense' ? '💼' : '📄';
+    var cls  = f.type === 'expense' ? 'src-expense' : 'src-vendor';
+    return '<div class="file-tag">' +
+      '<span class="ft-icon">' + icon + '</span>' +
+      '<span>' + f.name + '</span>' +
+      '<span class="ft-count">' + f.count + ' rows</span>' +
+      '<span class="src-badge ' + cls + '">' + f.type.toUpperCase() + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+// Modal button handlers
+document.getElementById('btnAppend').addEventListener('click', function(){
+  document.getElementById('importModal').classList.remove('visible');
+  if (pendingFile) { readAndProcess(pendingFile, true); pendingFile = null; }
+});
+document.getElementById('btnReplace').addEventListener('click', function(){
+  document.getElementById('importModal').classList.remove('visible');
+  if (pendingFile) { readAndProcess(pendingFile, false); pendingFile = null; }
+});
+document.getElementById('btnCancelImport').addEventListener('click', function(){
+  document.getElementById('importModal').classList.remove('visible');
+  pendingFile = null;
+});
 
 // ─── Generic Mode: KMBL-style pass-through conversion ────────────────────────
 function processGeneric(wb) {
@@ -942,24 +1080,15 @@ function renderGenericPreview(rows, numCols) {
 }
 
 // ─── Parse ERP ───────────────────────────────────────────────────────────────
-function parseERP(rows) {
+function parseVendorInvoice(rows) {
   var filterState = document.getElementById('cfgFilter').value;
   var filtered = filterState === 'all' ? rows : rows.filter(function(r){
     return (r['Workflow State']||'').trim() === filterState;
   });
 
-  var issues = [];
-  parsedRows = filtered.map(function(r, i) {
-    var missing = [];
-    if (!r['IFSC Code'])    missing.push('IFSC Code');
-    if (!r['Bank Account']) missing.push('Bank Account');
-    if (!r['Supplier'])     missing.push('Supplier');
-    if (!r['Net Payable Amount'] && r['Net Payable Amount'] !== 0) missing.push('Net Payable Amount');
-    if (missing.length) issues.push({row: i+2, id: r['ID'], missing: missing});
-    // Auto-detect payment type: IFT if beneficiary bank is Kotak (KKBK)
+  return filtered.map(function(r, i) {
     var rowIfsc  = String(r['IFSC Code'] || '').toUpperCase().trim();
     var autoType = rowIfsc.startsWith('KKBK') ? 'IFT' : 'NEFT';
-
     return {
       id:           r['ID'] || '',
       invNo:        String(r['Supplier Invoice Number'] || '').trim(),
@@ -974,13 +1103,38 @@ function parseERP(rows) {
       creatorEmail: r['owner'] || '',
       purpose:      r['Purpose'] || '',
       costCenter:   r['Cost Center'] || '',
+      source:       'vendor',
     };
   });
+}
 
-  renderIssues(issues);
-  renderPreview();
-  renderSummary();
-  showUI();
+function parseExpenseClaim(rows) {
+  var filterState = document.getElementById('cfgFilter').value;
+  var filtered = filterState === 'all' ? rows : rows.filter(function(r){
+    var ws = (r['Workflow State']||'').trim();
+    return ws === filterState || ws === 'In Process' || ws === 'Approved';
+  });
+
+  return filtered.map(function(r, i) {
+    var rowIfsc  = String(r['IFSC Code'] || '').toUpperCase().trim();
+    var autoType = rowIfsc.startsWith('KKBK') ? 'IFT' : 'NEFT';
+    return {
+      id:           r['ID'] || '',
+      invNo:        String(r['ID'] || '').trim(),
+      supplier:     r['Employee Name'] || '',
+      ifsc:         r['IFSC Code'] || '',
+      pmtType:      autoType,
+      accNo:        String(r['Bank A/C No.'] || ''),
+      amount:       parseFloat(r['Total Sanctioned Amount']) || 0,
+      tdsAmt:       0,
+      date:         r['Posting Date'] || '',
+      supplierEmail:'',
+      creatorEmail: r['owner'] || '',
+      purpose:      r['Expense Claim Description'] || '',
+      costCenter:   r['Cost Center(Expense Payable)'] || '',
+      source:       'expense',
+    };
+  });
 }
 
 function renderIssues(issues) {
@@ -1131,7 +1285,10 @@ function renderPreview() {
       '</select>';
 
     return '<tr>' +
-      '<td style="padding:10px 14px;color:var(--text2);min-width:30px;">' + (i+1) + '</td>' +
+      '<td style="padding:10px 14px;color:var(--text2);min-width:30px;">' + (i+1) +
+        (r.source === 'expense' ? ' <span class="src-badge src-expense">EXP</span>' :
+         r.source === 'vendor'  ? ' <span class="src-badge src-vendor">VEN</span>' : '') +
+      '</td>' +
       '<td style="min-width:80px;">' + pmtSel + '</td>' +
       '<td style="min-width:180px;">' + inp('cel_name',   suppName, '') + '</td>' +
       '<td style="min-width:110px;">' + inp('cel_ifsc',   effIfsc,  'cell-muted') + '</td>' +
@@ -1447,7 +1604,9 @@ document.getElementById('btnBoth').addEventListener('click', function(){
 });
 
 function resetAll() {
-  parsedRows = []; genericRows = []; fileInput.value = '';
+  parsedRows = []; genericRows = []; loadedFiles = []; fileInput.value = '';
+  document.getElementById('filesLoaded').style.display = 'none';
+  document.getElementById('filesLoaded').innerHTML = '';
   ['previewPanel','actions','summaryBar','issuesPanel','mappingSection',
    'configPanel','emailTemplatePanel'].forEach(function(id){
     document.getElementById(id).classList.remove('visible');
