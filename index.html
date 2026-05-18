@@ -280,6 +280,14 @@
   .toast.success { border-left: 3px solid var(--success); }
   .toast.error   { border-left: 3px solid var(--error); }
 
+  /* Stats panel */
+  .stats-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 26px; margin-top: 18px;
+    box-shadow: var(--shadow); display: none;
+  }
+  .stats-panel.visible { display: block; }
+
   /* Import modal */
   .import-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
@@ -647,6 +655,18 @@
     </div>
   </div>
 
+  <!-- Stats / Data Management -->
+  <div class="stats-panel" id="statsPanel">
+    <div class="config-title">Payment Stats</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;" id="statsGrid">
+      <div class="sum-card"><div class="sum-label">Files Uploaded</div><div class="sum-value" id="statFiles">0</div></div>
+      <div class="sum-card"><div class="sum-label">Vendor Payments</div><div class="sum-value" id="statVendor">0</div></div>
+      <div class="sum-card"><div class="sum-label">Expense Claims</div><div class="sum-value" id="statExpense">0</div></div>
+      <div class="sum-card"><div class="sum-label">Total Payments</div><div class="sum-value" id="statTotal">0</div></div>
+      <div class="sum-card"><div class="sum-label">Total Amount</div><div class="sum-value accent" id="statAmount">0</div></div>
+    </div>
+  </div>
+
   <div class="mapping-section" id="mappingSection">
     <div class="section-label">Field Mapping Reference</div>
     <div class="mapping-grid">
@@ -792,6 +812,17 @@ function sanitizeEmail(val) {
 }
 
 // Extract project name: take text before the first colon, strip -FC / -NFC suffix
+// Preserve leading zeros in bank account numbers
+// XLSX reads '00123456' as number 123456. We detect this and pad back.
+function preserveAccNo(val, raw) {
+  if (val === null || val === undefined || val === '') return '';
+  var s = String(val).trim();
+  // If the value is purely digits but shorter than what a bank A/C typically has,
+  // it may have lost leading zeros. We can't know the original length unless
+  // we compare with raw. For safety, just always return as string.
+  return s;
+}
+
 function extractProject(costCenter) {
   if (!costCenter) return '';
   var part = String(costCenter).split(':')[0].trim();
@@ -801,12 +832,52 @@ function extractProject(costCenter) {
 }
 
 // Remove trailing -FC / -NFC from vendor/supplier names
+// Clean purpose for email: remove 'Being' prefix, everything after 'TDS', trailing punctuation
+function cleanPurpose(text) {
+  if (!text) return '';
+  var s = String(text);
+  // Remove everything from TDS onwards (case-insensitive)
+  s = s.replace(/\bTDS\b.*/i, '');
+  // Remove 'Being' prefix (case-insensitive), common ERP narration start
+  s = s.replace(/^\s*Being\s+/i, '');
+  // Clean up trailing punctuation and whitespace
+  s = s.replace(/[,;.\-]+$/, '').trim();
+  return s;
+}
+
 function cleanVendor(name) {
   if (!name) return '';
   return String(name).replace(/\s*-\s*(NFC|FC)\s*$/i, '').trim();
 }
 
 // ─── Format helpers ─────────────────────────────────────────────────────────
+// Fix leading zeros in bank account numbers lost during XLSX number parsing
+// Goes back to raw sheet cells to get the original text value
+function fixLeadingZeros(rows, sheet, colName) {
+  if (!sheet || !rows.length) return;
+  // Find which column index has the bank account header
+  var range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+  var accColIdx = -1;
+  for (var col = range.s.c; col <= range.e.c; col++) {
+    var cellRef = XLSX.utils.encode_cell({r: range.s.r, c: col});
+    var cell = sheet[cellRef];
+    if (cell && String(cell.v || '').trim() === colName) { accColIdx = col; break; }
+  }
+  if (accColIdx < 0) return;
+
+  // For each data row, read the raw cell and get formatted text
+  for (var i = 0; i < rows.length; i++) {
+    var dataRow = range.s.r + 1 + i; // skip header
+    var cellRef2 = XLSX.utils.encode_cell({r: dataRow, c: accColIdx});
+    var cell2 = sheet[cellRef2];
+    if (cell2) {
+      // If cell has a formatted text (w), use it; else if it has a string value (v), use it
+      var textVal = cell2.w || String(cell2.v || '');
+      rows[i][colName] = textVal;
+    }
+  }
+}
+
 function fmtDate(val) {
   if (!val) return '';
   if (val instanceof Date) {
@@ -907,12 +978,14 @@ function readAndProcess(file, append) {
       if (fileType === 'expense') {
         sheet = wb.Sheets['Expense Claim'] || wb.Sheets[wb.SheetNames[0]];
         rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
+        fixLeadingZeros(rows, sheet, 'Bank A/C No.');
         setProgress(90);
         var newRows = parseExpenseClaim(rows);
         mergeRows(newRows, append, file.name, 'expense', newRows.length);
       } else {
         sheet = wb.Sheets['Vendor Invoice'] || wb.Sheets[wb.SheetNames[0]];
         rows  = XLSX.utils.sheet_to_json(sheet, {defval:''});
+        fixLeadingZeros(rows, sheet, 'Bank Account');
         setProgress(90);
         var newRows2 = parseVendorInvoice(rows);
         mergeRows(newRows2, append, file.name, 'vendor', newRows2.length);
@@ -1321,12 +1394,26 @@ function renderSummary() {
   document.getElementById('summaryBar').classList.add('visible');
 }
 
+function renderStats() {
+  var vendorCount  = parsedRows.filter(function(r){ return r.source === 'vendor'; }).length;
+  var expenseCount = parsedRows.filter(function(r){ return r.source === 'expense'; }).length;
+  var totalAmt     = parsedRows.reduce(function(s,r){ return s + r.amount; }, 0);
+
+  document.getElementById('statFiles').textContent   = loadedFiles.length;
+  document.getElementById('statVendor').textContent  = vendorCount;
+  document.getElementById('statExpense').textContent = expenseCount;
+  document.getElementById('statTotal').textContent   = parsedRows.length;
+  document.getElementById('statAmount').textContent  = fmtAmt(totalAmt);
+  document.getElementById('statsPanel').classList.add('visible');
+}
+
 function showUI() {
   ['configPanel','previewPanel','actions','mappingSection'].forEach(function(id){
     document.getElementById(id).classList.add('visible');
   });
   checkDateAlert();
   renderEmailTemplate();
+  renderStats();
   showToast('Loaded ' + parsedRows.length + ' payment rows');
 }
 
@@ -1365,9 +1452,7 @@ function renderEmailTemplate() {
 
   var dataRows = parsedRows.map(function(r, i){
     var name    = cleanVendor(r.supplier);
-    // Trim purpose: remove everything from 'TDS' word onwards (case-insensitive)
-    var rawPurpose = r.purpose.replace(/\bTDS\b.*/i, '').trim().replace(/[,;.]+$/, '').trim();
-    var purpose = sanitize(rawPurpose);
+    var purpose = sanitize(cleanPurpose(r.purpose));
     var project = extractProject(r.costCenter);
     var amt     = new Intl.NumberFormat('en-IN').format(r.amount);
     return '<tr>' +
@@ -1414,8 +1499,7 @@ function renderEmailTemplate() {
     lines.push(Array(120).join('-'));
     parsedRows.forEach(function(r, i){
       var name    = cleanVendor(r.supplier);
-      var rawPurp = r.purpose.replace(/\bTDS\b.*/i, '').trim().replace(/[,;.]+$/, '').trim();
-      var purpose = sanitize(rawPurp);
+      var purpose = sanitize(cleanPurpose(r.purpose));
       var project = extractProject(r.costCenter);
       var amt     = 'Rs ' + new Intl.NumberFormat('en-IN').format(r.amount);
       lines.push((i+1) + '. ' + name + '		' + amt + '		' + project + '		' + purpose);
@@ -1453,13 +1537,12 @@ function renderEmailTemplate() {
     ];
 
     parsedRows.forEach(function(r, i){
-      var rawP = r.purpose.replace(/\bTDS\b.*/i, '').trim().replace(/[,;.]+$/, '').trim();
       wsData.push([
         i + 1,
         cleanVendor(r.supplier),
         r.amount,
         extractProject(r.costCenter),
-        rawP
+        cleanPurpose(r.purpose)
       ]);
     });
 
@@ -1607,7 +1690,7 @@ function resetAll() {
   parsedRows = []; genericRows = []; loadedFiles = []; fileInput.value = '';
   document.getElementById('filesLoaded').style.display = 'none';
   document.getElementById('filesLoaded').innerHTML = '';
-  ['previewPanel','actions','summaryBar','issuesPanel','mappingSection',
+  ['previewPanel','actions','summaryBar','issuesPanel','mappingSection','statsPanel',
    'configPanel','emailTemplatePanel'].forEach(function(id){
     document.getElementById(id).classList.remove('visible');
   });
