@@ -1231,16 +1231,24 @@ function readAndProcess(file, append) {
 
 function detectFileType(wb) {
   // Check sheet names first
-  if (wb.SheetNames.indexOf('Expense Claim') >= 0) return 'expense';
-  if (wb.SheetNames.indexOf('Vendor Invoice') >= 0) return 'vendor';
+  for (var s = 0; s < wb.SheetNames.length; s++) {
+    var sn = wb.SheetNames[s].toLowerCase();
+    if (sn.indexOf('expense') >= 0 || sn.indexOf('reimbursement') >= 0 || sn.indexOf('claim') >= 0) return 'expense';
+    if (sn.indexOf('vendor') >= 0 || sn.indexOf('invoice') >= 0 || sn.indexOf('payment') >= 0) return 'vendor';
+  }
 
   // Check column headers of first sheet
   var sheet = wb.Sheets[wb.SheetNames[0]];
   var headers = XLSX.utils.sheet_to_json(sheet, {header:1})[0] || [];
   var headerStr = headers.join(',').toLowerCase();
 
+  // Expense claim indicators
   if (headerStr.indexOf('employee name') >= 0 || headerStr.indexOf('expense claim') >= 0 ||
-      headerStr.indexOf('total sanctioned amount') >= 0) return 'expense';
+      headerStr.indexOf('total sanctioned amount') >= 0 || headerStr.indexOf('expense approver') >= 0) return 'expense';
+
+  // Vendor indicators
+  if (headerStr.indexOf('supplier') >= 0 || headerStr.indexOf('net payable') >= 0 ||
+      headerStr.indexOf('supplier invoice') >= 0) return 'vendor';
 
   return 'vendor'; // default
 }
@@ -1384,57 +1392,98 @@ function renderGenericPreview(rows, numCols) {
 
 // ─── Parse ERP ───────────────────────────────────────────────────────────────
 function parseVendorInvoice(rows) {
+  // Smart filter: only apply Workflow State filter if the column exists
   var filterState = document.getElementById('cfgFilter').value;
-  var filtered = filterState === 'all' ? rows : rows.filter(function(r){
-    return (r['Workflow State']||'').trim() === filterState;
-  });
+  var hasWfCol = rows.length > 0 && ('Workflow State' in rows[0]);
+  var filtered;
+  if (filterState === 'all' || !hasWfCol) {
+    filtered = rows;
+  } else {
+    filtered = rows.filter(function(r){
+      return (r['Workflow State']||'').trim() === filterState;
+    });
+  }
 
   return filtered.map(function(r, i) {
-    var rowIfsc  = String(r['IFSC Code'] || '').toUpperCase().trim();
+    // Flexible column detection
+    var name   = r['Supplier'] || r['Vendor'] || r['supplier_name'] || r['Name'] || '';
+    var ifsc   = r['IFSC Code'] || r['ifsc_code'] || r['IFSC'] || '';
+    var accNo  = r['Bank Account'] || r['Bank A/C No.'] || r['bank_account'] || r['Account No'] || '';
+    var amount = parseFloat(r['Net Payable Amount'] || r['Grand Total'] || r['Amount'] || r['Total'] || 0) || 0;
+    var tds    = parseFloat(r['TDS Computed Amount'] || r['TDS Amount'] || 0) || 0;
+    var invNo  = r['Supplier Invoice Number'] || r['Invoice Number'] || r['Bill No'] || r['ID'] || '';
+    var date   = r['Posting Date'] || r['posting_date'] || r['Date'] || '';
+    var email  = r['Supplier Email'] || r['Email'] || '';
+    var owner  = r['owner'] || r['Owner'] || '';
+    var desc   = r['Purpose'] || r['Remarks'] || r['Description'] || '';
+    var cc     = r['Cost Center'] || r['Cost Center(Expense Payable)'] || r['cost_center'] || '';
+    var id     = r['ID'] || r['id'] || r['Name'] || '';
+
+    var rowIfsc  = String(ifsc).toUpperCase().trim();
     var autoType = rowIfsc.startsWith('KKBK') ? 'IFT' : 'NEFT';
+
     return {
-      id:           r['ID'] || '',
-      invNo:        String(r['Supplier Invoice Number'] || '').trim(),
-      supplier:     r['Supplier'] || '',
-      ifsc:         r['IFSC Code'] || '',
+      id:           id,
+      invNo:        String(invNo).trim(),
+      supplier:     name,
+      ifsc:         ifsc,
       pmtType:      autoType,
-      accNo:        String(r['Bank Account'] || ''),
-      amount:       parseFloat(r['Net Payable Amount']) || 0,
-      tdsAmt:       parseFloat(r['TDS Computed Amount']) || 0,
-      date:         r['Posting Date'] || '',
-      supplierEmail:r['Supplier Email'] || '',
-      creatorEmail: r['owner'] || '',
-      purpose:      r['Purpose'] || '',
-      costCenter:   r['Cost Center'] || '',
+      accNo:        String(accNo),
+      amount:       amount,
+      tdsAmt:       tds,
+      date:         date,
+      supplierEmail:email,
+      creatorEmail: owner,
+      purpose:      desc,
+      costCenter:   cc,
       source:       'vendor',
     };
   });
 }
 
 function parseExpenseClaim(rows) {
+  // Smart filter: only apply Workflow State filter if the column exists
   var filterState = document.getElementById('cfgFilter').value;
-  var filtered = filterState === 'all' ? rows : rows.filter(function(r){
-    var ws = (r['Workflow State']||'').trim();
-    return ws === filterState || ws === 'In Process' || ws === 'Approved';
-  });
+  var hasWfCol = rows.length > 0 && ('Workflow State' in rows[0]);
+  var filtered;
+  if (filterState === 'all' || !hasWfCol) {
+    filtered = rows;
+  } else {
+    filtered = rows.filter(function(r){
+      var ws = (r['Workflow State']||'').trim();
+      return ws === filterState || ws === 'In Process' || ws === 'Approved' || ws === '';
+    });
+  }
 
   return filtered.map(function(r, i) {
-    var rowIfsc  = String(r['IFSC Code'] || '').toUpperCase().trim();
+    // Flexible column detection: try multiple possible column names
+    var name   = r['Employee Name'] || r['employee_name'] || r['Supplier'] || r['Name'] || '';
+    var ifsc   = r['IFSC Code'] || r['ifsc_code'] || r['IFSC'] || '';
+    var accNo  = r['Bank A/C No.'] || r['Bank Account'] || r['bank_account_no'] || r['Account No'] || '';
+    var amount = parseFloat(r['Total Sanctioned Amount'] || r['Grand Total'] || r['Amount'] || r['Net Payable Amount'] || 0) || 0;
+    var date   = r['Posting Date'] || r['posting_date'] || r['Date'] || '';
+    var desc   = r['Expense Claim Description'] || r['Remarks'] || r['Purpose'] || r['Description'] || '';
+    var cc     = r['Cost Center(Expense Payable)'] || r['Cost Center'] || r['cost_center'] || '';
+    var id     = r['ID'] || r['id'] || r['Name'] || '';
+    var owner  = r['owner'] || r['Owner'] || '';
+
+    var rowIfsc  = String(ifsc).toUpperCase().trim();
     var autoType = rowIfsc.startsWith('KKBK') ? 'IFT' : 'NEFT';
+
     return {
-      id:           r['ID'] || '',
-      invNo:        String(r['ID'] || '').trim(),
-      supplier:     r['Employee Name'] || '',
-      ifsc:         r['IFSC Code'] || '',
+      id:           id,
+      invNo:        String(id).trim(),
+      supplier:     name,
+      ifsc:         ifsc,
       pmtType:      autoType,
-      accNo:        String(r['Bank A/C No.'] || ''),
-      amount:       parseFloat(r['Total Sanctioned Amount']) || 0,
+      accNo:        String(accNo),
+      amount:       amount,
       tdsAmt:       0,
-      date:         r['Posting Date'] || '',
+      date:         date,
       supplierEmail:'',
-      creatorEmail: r['owner'] || '',
-      purpose:      r['Expense Claim Description'] || '',
-      costCenter:   r['Cost Center(Expense Payable)'] || '',
+      creatorEmail: owner,
+      purpose:      desc,
+      costCenter:   cc,
       source:       'expense',
     };
   });
