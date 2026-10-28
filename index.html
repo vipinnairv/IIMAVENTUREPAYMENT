@@ -697,7 +697,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.4</div>
+    <div class="badge">v1.5</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -836,7 +836,7 @@
       <div class="field-group">
         <label for="cfgDebitAc">Debit A/C <span class="req">*</span></label>
         <input type="text" id="cfgDebitAc" value="" placeholder="Enter debit account number" inputmode="numeric" autocomplete="off">
-        <div class="field-help">Remembered separately for FCRA and Non-FCRA.</div>
+        <div class="field-help">Defaults: Non-FCRA 0711160987 · FCRA 4812763856. Changes are remembered separately per fund type.</div>
       </div>
       <div class="field-group">
         <label for="cfgFilter">Filter: Workflow State</label>
@@ -1044,7 +1044,7 @@
       <div class="help-section">
         <h3><span class="h-icon">2&#xFE0F;&#x20E3;</span> Select Fund Type</h3>
         <p>Click <span class="help-tag help-tag-blue">Non-FCRA</span> for regular vendor payments, or <span class="help-tag help-tag-green">FCRA</span> for foreign contribution payments.</p>
-        <div class="help-tip">The app remembers a separate Debit A/C for FCRA and for Non-FCRA. Switching the fund type switches to that fund's saved account, so the two are never mixed up. Always check the account in the confirmation box before downloading.</div>
+        <div class="help-tip">Each fund type has its own Debit A/C: <strong>Non-FCRA 0711160987</strong> and <strong>FCRA 4812763856</strong>. Switching the fund type switches the account automatically, so the two are never mixed up. Always check the account in the confirmation box before downloading.</div>
       </div>
 
       <div class="help-section">
@@ -1069,7 +1069,7 @@
 
       <div class="help-section">
         <h3><span class="h-icon">5&#xFE0F;&#x20E3;</span> Fill the Debit Account <span class="req">*</span></h3>
-        <p>Type your Kotak Debit A/C number in the configuration panel. It fills into every row, and it is remembered for next time (per fund type).</p>
+        <p>The Debit A/C is filled in for you from the fund type — <strong>Non-FCRA 0711160987</strong>, <strong>FCRA 4812763856</strong> — and goes into every row. If you change it, your value is remembered for that fund type; <strong>Restore default settings</strong> brings back these accounts.</p>
         <div class="help-tip">If you edit one row's Debit A/C in the table, that row keeps your value even if you change the configuration later. Download stays disabled while the Debit A/C is empty.</div>
       </div>
 
@@ -2777,6 +2777,9 @@ var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
+// Default Kotak debit accounts, one per fund type (kept as text: leading zero)
+var DEFAULT_DEBIT = { debit_NonFCRA: '0711160987', debit_FCRA: '4812763856' };
+
 function fundKey() {
   return isFcra ? 'debit_FCRA' : 'debit_NonFCRA';
 }
@@ -2793,9 +2796,11 @@ function saveSettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
 }
 
+// Saved account for the current fund type; a blank saved value falls back
+// to the default account so it never ends up empty by accident
 function savedDebit() {
   var v = loadSettings()[fundKey()];
-  return typeof v === 'string' ? v : '';
+  return typeof v === 'string' && v.trim() ? v : DEFAULT_DEBIT[fundKey()];
 }
 
 function applySettings() {
@@ -2813,7 +2818,7 @@ function applySettings() {
 document.getElementById('resetSettingsBtn').addEventListener('click', function(){
   try { localStorage.removeItem(SETTINGS_KEY); } catch (e) {}
   SAVED_FIELDS.forEach(function(id){ document.getElementById(id).value = DEFAULT_SETTINGS[id]; });
-  document.getElementById('cfgDebitAc').value = '';
+  document.getElementById('cfgDebitAc').value = DEFAULT_DEBIT[fundKey()];
   renderCcChips();
   onConfigChange();
   showToast('Default settings restored');
