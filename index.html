@@ -5,30 +5,185 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CjxyZWN0IHg9IjIiIHk9IjYiIHdpZHRoPSIyOCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiMxYTFhMmUiLz4KPHJlY3QgeD0iMiIgeT0iNiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjUiIGZpbGw9IiMwMGIzODYiLz4KPHJlY3QgeD0iNSIgeT0iMTYiIHdpZHRoPSIxMCIgaGVpZ2h0PSIyIiByeD0iMSIgZmlsbD0iIzAwYjM4NiIgb3BhY2l0eT0iMC42Ii8+CjxyZWN0IHg9IjUiIHk9IjIwIiB3aWR0aD0iNiIgaGVpZ2h0PSIyIiByeD0iMSIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC4zIi8+CjxyZWN0IHg9IjIxIiB5PSIxOCIgd2lkdGg9IjYiIGhlaWdodD0iNCIgcng9IjEiIGZpbGw9IiMwMGIzODYiLz4KPC9zdmc+">
 <title>Kotak Pay Converter | by Vipin Nair</title>
+<script>
+  try { var t = localStorage.getItem('kotakPayConverter.theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* MiyeeIndia Tech Labs theme: dark-first navy, teal accent, amber secondary */
   :root {
-    --bg: #f5f7fa;
-    --surface: #ffffff;
-    --surface2: #f0f4f3;
-    --border: #e0e6e4;
-    --border2: #c5ceca;
-    --accent: #00b386;
-    --accent-light: #e6f9f3;
-    --accent2: #0066cc;
-    --accent2-light: #e8f0fc;
-    --accent3: #e05c1a;
-    --text: #1a1a2e;
-    --text2: #4a5568;
-    --text3: #8a9ab0;
-    --success: #00b386;
-    --warning: #d97706;
-    --error: #dc3545;
+    --bg: #080C18;
+    --surface: #0D1424;
+    --surface2: #121C30;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.16);
+    --header-bg: #0D1424;
+    --accent: #17E8B8;
+    --accent-hover: #45F0C9;
+    --accent-strong: #17E8B8;
+    --accent-light: rgba(23,232,184,0.12);
+    --accent-ring: rgba(23,232,184,0.18);
+    --accent-border: rgba(23,232,184,0.35);
+    --on-accent: #04261D;
+    --accent2: #FBBF24;
+    --accent2-hover: #FCD34D;
+    --accent2-light: rgba(251,191,36,0.12);
+    --accent2-ring: rgba(251,191,36,0.25);
+    --on-accent2: #241700;
+    --accent3: #F472B6;
+    --blue: #60A5FA;
+    --blue-bg: rgba(96,165,250,0.14);
+    --amber-strong: #FBBF24;
+    --amber-bg: rgba(251,191,36,0.14);
+    --text: #E6EEFF;
+    --text2: #A9B6D3;
+    --text3: #7487AE;
+    --success: #17E8B8;
+    --warning: #FBBF24;
+    --error: #F87171;
+    --error-fg: #FCA5A5;
+    --error-bg: rgba(248,113,113,0.12);
+    --error-border: rgba(248,113,113,0.45);
+    --warn-fg: #FBBF24;
+    --warn-bg: rgba(251,191,36,0.10);
+    --warn-border: rgba(251,191,36,0.45);
+    --edit-bg: rgba(251,191,36,0.14);
+    --hover-tint: rgba(255,255,255,0.05);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.25);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.35);
+    color-scheme: dark;
     --mono: 'DM Mono', 'IBM Plex Mono', 'Consolas', monospace;
-    --sans: 'Inter', 'DM Sans', 'IBM Plex Sans', system-ui, sans-serif;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
-    --shadow-md: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+    --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --display: 'Syne', 'Plus Jakarta Sans', sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F2F5FF;
+      --surface: #FFFFFF;
+      --surface2: #EBF0FF;
+      --border: rgba(10,16,32,0.09);
+      --border2: rgba(10,16,32,0.18);
+      --header-bg: #0A1020;
+      --accent: #0AB893;
+      --accent-hover: #09A583;
+      --accent-strong: #067A62;
+      --accent-light: rgba(10,184,147,0.10);
+      --accent-ring: rgba(10,184,147,0.16);
+      --accent-border: rgba(10,184,147,0.35);
+      --on-accent: #04261D;
+      --accent2: #D97706;
+      --accent2-hover: #F59E0B;
+      --accent2-light: rgba(217,119,6,0.10);
+      --accent2-ring: rgba(217,119,6,0.22);
+      --on-accent2: #FFFFFF;
+      --accent3: #DB2777;
+      --blue: #2563EB;
+      --blue-bg: #E5EDFF;
+      --amber-strong: #B45309;
+      --amber-bg: #FEF3E2;
+      --text: #0A1020;
+      --text2: #3B4A68;
+      --text3: #5A6B8A;
+      --success: #0AB893;
+      --warning: #D97706;
+      --error: #DC2626;
+      --error-fg: #991B1B;
+      --error-bg: #FEF2F2;
+      --error-border: #FCA5A5;
+      --warn-fg: #92400E;
+      --warn-bg: #FFF8E6;
+      --warn-border: #F5C842;
+      --edit-bg: #FFFBE6;
+      --hover-tint: rgba(10,16,32,0.04);
+      --shadow: 0 1px 3px rgba(10,16,32,0.06), 0 4px 12px rgba(10,16,32,0.04);
+      --shadow-md: 0 2px 8px rgba(10,16,32,0.08), 0 8px 24px rgba(10,16,32,0.06);
+    color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F5FF;
+    --surface: #FFFFFF;
+    --surface2: #EBF0FF;
+    --border: rgba(10,16,32,0.09);
+    --border2: rgba(10,16,32,0.18);
+    --header-bg: #0A1020;
+    --accent: #0AB893;
+    --accent-hover: #09A583;
+    --accent-strong: #067A62;
+    --accent-light: rgba(10,184,147,0.10);
+    --accent-ring: rgba(10,184,147,0.16);
+    --accent-border: rgba(10,184,147,0.35);
+    --on-accent: #04261D;
+    --accent2: #D97706;
+    --accent2-hover: #F59E0B;
+    --accent2-light: rgba(217,119,6,0.10);
+    --accent2-ring: rgba(217,119,6,0.22);
+    --on-accent2: #FFFFFF;
+    --accent3: #DB2777;
+    --blue: #2563EB;
+    --blue-bg: #E5EDFF;
+    --amber-strong: #B45309;
+    --amber-bg: #FEF3E2;
+    --text: #0A1020;
+    --text2: #3B4A68;
+    --text3: #5A6B8A;
+    --success: #0AB893;
+    --warning: #D97706;
+    --error: #DC2626;
+    --error-fg: #991B1B;
+    --error-bg: #FEF2F2;
+    --error-border: #FCA5A5;
+    --warn-fg: #92400E;
+    --warn-bg: #FFF8E6;
+    --warn-border: #F5C842;
+    --edit-bg: #FFFBE6;
+    --hover-tint: rgba(10,16,32,0.04);
+    --shadow: 0 1px 3px rgba(10,16,32,0.06), 0 4px 12px rgba(10,16,32,0.04);
+    --shadow-md: 0 2px 8px rgba(10,16,32,0.08), 0 8px 24px rgba(10,16,32,0.06);
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #080C18;
+    --surface: #0D1424;
+    --surface2: #121C30;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.16);
+    --header-bg: #0D1424;
+    --accent: #17E8B8;
+    --accent-hover: #45F0C9;
+    --accent-strong: #17E8B8;
+    --accent-light: rgba(23,232,184,0.12);
+    --accent-ring: rgba(23,232,184,0.18);
+    --accent-border: rgba(23,232,184,0.35);
+    --on-accent: #04261D;
+    --accent2: #FBBF24;
+    --accent2-hover: #FCD34D;
+    --accent2-light: rgba(251,191,36,0.12);
+    --accent2-ring: rgba(251,191,36,0.25);
+    --on-accent2: #241700;
+    --accent3: #F472B6;
+    --blue: #60A5FA;
+    --blue-bg: rgba(96,165,250,0.14);
+    --amber-strong: #FBBF24;
+    --amber-bg: rgba(251,191,36,0.14);
+    --text: #E6EEFF;
+    --text2: #A9B6D3;
+    --text3: #7487AE;
+    --success: #17E8B8;
+    --warning: #FBBF24;
+    --error: #F87171;
+    --error-fg: #FCA5A5;
+    --error-bg: rgba(248,113,113,0.12);
+    --error-border: rgba(248,113,113,0.45);
+    --warn-fg: #FBBF24;
+    --warn-bg: rgba(251,191,36,0.10);
+    --warn-border: rgba(251,191,36,0.45);
+    --edit-bg: rgba(251,191,36,0.14);
+    --hover-tint: rgba(255,255,255,0.05);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.25);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.35);
+    color-scheme: dark;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
@@ -38,7 +193,7 @@
     padding: 0 40px;
     display: flex; align-items: center; justify-content: space-between;
     height: 60px;
-    background: #1a1a2e;
+    background: var(--header-bg);
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     position: sticky; top: 0; z-index: 100;
     border-top: 3px solid var(--accent);
@@ -47,19 +202,28 @@
   .logo-icon {
     display: flex; align-items: center; flex-shrink: 0;
   }
-  .logo-text { font-family: var(--mono); font-size: 13px; font-weight: 600; color: #ffffff; letter-spacing: 0.06em; }
+  .logo-text { font-family: var(--display); font-size: 15px; font-weight: 700; color: #F4F7FF; letter-spacing: 0.02em; }
   .logo-sub  { font-size: 11px; color: rgba(255,255,255,0.5); font-family: var(--mono); margin-top: 1px; }
   .badge {
     font-family: var(--mono); font-size: 10px; padding: 3px 10px;
     border-radius: 20px; border: 1px solid var(--accent);
-    color: var(--accent); background: rgba(0,179,134,0.1); letter-spacing: 0.08em;
+    color: var(--accent-strong); background: var(--accent-ring); letter-spacing: 0.08em;
   }
 
   main { max-width: 1120px; margin: 0 auto; padding: 36px 40px 80px; }
 
   .hero { text-align: center; padding: 36px 0 28px; }
-  .hero h1 { font-size: 30px; font-weight: 300; letter-spacing: -0.02em; color: var(--text); margin-bottom: 10px; }
-  .hero h1 span { color: var(--accent); font-weight: 600; }
+  .hero { position: relative; overflow: hidden; }
+  .hero::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 15%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 15%, transparent 100%);
+  }
+  .hero > * { position: relative; }
+  .hero h1 { font-family: var(--display); font-size: clamp(26px, 4.5vw, 38px); font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; color: var(--text); margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent-strong); }
   .hero p { color: var(--text2); font-size: 14px; }
 
   .flow {
@@ -84,7 +248,7 @@
   }
   .upload-zone:hover, .upload-zone.drag-over {
     border-color: var(--accent); background: var(--accent-light);
-    box-shadow: 0 0 0 4px rgba(0,179,134,0.08);
+    box-shadow: 0 0 0 4px var(--accent-ring);
   }
   .upload-zone.drag-over { transform: scale(1.008); }
   .upload-icon {
@@ -130,8 +294,8 @@
     font-size: 12px; padding: 9px 12px; outline: none;
     transition: border-color 0.18s, box-shadow 0.18s; width: 100%;
   }
-  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,179,134,0.12); background: #fff; }
-  select option { background: #fff; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); background: var(--surface); }
+  select option { background: var(--surface); }
 
   /* Summary */
   .summary-bar { display: none; grid-template-columns: repeat(4,1fr); gap: 14px; margin-top: 18px; }
@@ -139,13 +303,13 @@
   .sum-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; box-shadow: var(--shadow); }
   .sum-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 7px; }
   .sum-value { font-family: var(--mono); font-size: 20px; font-weight: 600; color: var(--text); }
-  .sum-value.accent { color: var(--accent); }
+  .sum-value.accent { color: var(--accent-strong); }
 
   /* Issues */
-  .issues-panel { background: #fef5f5; border: 1px solid #f5c6c6; border-radius: 10px; padding: 14px 18px; margin-top: 14px; display: none; }
+  .issues-panel { background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 10px; padding: 14px 18px; margin-top: 14px; display: none; }
   .issues-panel.visible { display: block; }
   .issues-title { font-family: var(--mono); font-size: 10px; color: var(--error); margin-bottom: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
-  .issue-row { font-family: var(--mono); font-size: 11px; color: #7b2020; margin-bottom: 3px; display: flex; gap: 10px; }
+  .issue-row { font-family: var(--mono); font-size: 11px; color: var(--error-fg); margin-bottom: 3px; display: flex; gap: 10px; }
   .issue-row .row-num { color: var(--error); min-width: 44px; }
 
   /* Preview */
@@ -162,7 +326,7 @@
   }
   .preview-header-left { display: flex; align-items: center; gap: 12px; }
   .preview-title { font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; }
-  .count-badge { background: var(--accent-light); border: 1px solid rgba(0,179,134,0.25); color: var(--accent); font-family: var(--mono); font-size: 10px; padding: 2px 10px; border-radius: 20px; }
+  .count-badge { background: var(--accent-light); border: 1px solid var(--accent-border); color: var(--accent-strong); font-family: var(--mono); font-size: 10px; padding: 2px 10px; border-radius: 20px; }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
   th {
@@ -179,11 +343,11 @@
     -webkit-appearance: auto;
   }
   td select.cell-select:focus {
-    background: #fff; box-shadow: inset 0 0 0 2px var(--accent); color: var(--text);
+    background: var(--surface); box-shadow: inset 0 0 0 2px var(--accent); color: var(--text);
   }
-  td select.cell-select.cell-edited { background: #fffbe6; }
-  td select.cell-select.pmt-ift { color: #0b9e7a; font-weight: 600; }
-  td select.cell-select.pmt-neft { color: #1a6fd4; font-weight: 600; }
+  td select.cell-select.cell-edited { background: var(--edit-bg); }
+  td select.cell-select.pmt-ift { color: var(--accent-strong); font-weight: 600; }
+  td select.cell-select.pmt-neft { color: var(--blue); font-weight: 600; }
   tr:hover td select.cell-select:not(:focus) { background: var(--accent-light); }
   td input.cell-input {
     width: 100%; border: none; background: transparent; font-family: var(--mono);
@@ -191,24 +355,24 @@
     white-space: nowrap; box-sizing: border-box; cursor: text;
   }
   td input.cell-input:focus {
-    background: #fff; box-shadow: inset 0 0 0 2px var(--accent);
+    background: var(--surface); box-shadow: inset 0 0 0 2px var(--accent);
     border-radius: 4px; color: var(--text);
   }
   td input.cell-input.cell-amount {
     color: var(--accent2); font-weight: 600; text-align: right;
   }
   td input.cell-input.cell-muted { color: var(--text2); }
-  td input.cell-input.cell-edited { background: #fffbe6; }
+  td input.cell-input.cell-edited { background: var(--edit-bg); }
   tr:hover td input.cell-input:not(:focus) { background: var(--accent-light); }
   .edit-badge {
     font-family: var(--mono); font-size: 9px; padding: 2px 7px;
-    border-radius: 10px; background: #fff3cd; color: #7a5c00;
-    border: 1px solid #f5c842; display: none; margin-left: 8px; vertical-align: middle;
+    border-radius: 10px; background: var(--warn-bg); color: var(--warn-fg);
+    border: 1px solid var(--warn-border); display: none; margin-left: 8px; vertical-align: middle;
   }
   .edit-badge.visible { display: inline; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: transparent; }
-  .td-amount { color: var(--accent); font-weight: 600; }
+  .td-amount { color: var(--accent-strong); font-weight: 600; }
   .td-muted  { color: var(--text2); }
 
   /* TXT preview */
@@ -230,10 +394,10 @@
     cursor: pointer; transition: all 0.16s;
     display: flex; align-items: center; gap: 7px; letter-spacing: 0.04em;
   }
-  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(0,179,134,0.25); }
-  .btn-primary:hover { background: #009973; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,179,134,0.35); }
-  .btn-secondary { background: var(--accent2); color: #fff; box-shadow: 0 2px 8px rgba(0,102,204,0.2); }
-  .btn-secondary:hover { background: #0055aa; transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 2px 8px var(--accent-border); }
+  .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px var(--accent-border); }
+  .btn-secondary { background: var(--accent2); color: var(--on-accent2); box-shadow: 0 2px 8px var(--accent2-ring); }
+  .btn-secondary:hover { background: var(--accent2-hover); transform: translateY(-1px); }
   .btn-outline { background: var(--surface); color: var(--text2); border: 1px solid var(--border2); }
   .btn-outline:hover { border-color: var(--text2); color: var(--text); background: var(--surface2); }
 
@@ -254,8 +418,8 @@
     font-size: 11px; box-shadow: var(--shadow);
   }
   .map-from  { color: var(--text2); flex: 1; }
-  .map-arrow { color: var(--accent); }
-  .map-to    { color: var(--accent); flex: 1; text-align: right; font-weight: 600; }
+  .map-arrow { color: var(--accent-strong); }
+  .map-to    { color: var(--accent-strong); flex: 1; text-align: right; font-weight: 600; }
 
   .reset-btn {
     background: none; border: none; color: var(--text3);
@@ -263,14 +427,14 @@
     display: flex; align-items: center; gap: 5px;
     padding: 4px 8px; border-radius: 6px; transition: all 0.15s;
   }
-  .reset-btn:hover { color: var(--error); background: #fef5f5; }
+  .reset-btn:hover { color: var(--error); background: var(--error-bg); }
   .refresh-btn {
-    background: var(--accent-light); border: 1px solid rgba(0,179,134,0.3);
-    color: var(--accent); font-family: var(--mono); font-size: 11px;
+    background: var(--accent-light); border: 1px solid var(--accent-border);
+    color: var(--accent-strong); font-family: var(--mono); font-size: 11px;
     cursor: pointer; padding: 4px 10px; border-radius: 6px;
     transition: all 0.15s; display: flex; align-items: center; gap: 4px;
   }
-  .refresh-btn:hover { background: var(--accent); color: #fff; }
+  .refresh-btn:hover { background: var(--accent); color: var(--on-accent); }
 
   .toast {
     position: fixed; bottom: 26px; right: 26px;
@@ -303,7 +467,7 @@
     border-radius: 14px; padding: 28px 32px; max-width: 420px; width: 90%;
     box-shadow: var(--shadow-md); text-align: center;
   }
-  .import-modal h3 { font-family: var(--mono); font-size: 14px; color: var(--text); margin-bottom: 8px; }
+  .import-modal h3 { font-family: var(--display); font-size: 17px; color: var(--text); margin-bottom: 8px; }
   .import-modal p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
   .import-modal-btns { display: flex; gap: 10px; justify-content: center; }
   .import-modal .btn { font-size: 12px; padding: 10px 20px; }
@@ -313,8 +477,8 @@
     display: inline-block; font-family: var(--mono); font-size: 9px;
     padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em; vertical-align: middle; margin-left: 4px;
   }
-  .src-vendor { background: #e8f0fc; color: #1a6fd4; }
-  .src-expense { background: #fef3e2; color: #b45309; }
+  .src-vendor { background: var(--blue-bg); color: var(--blue); }
+  .src-expense { background: var(--amber-bg); color: var(--amber-strong); }
 
   /* Files loaded list */
   .files-loaded {
@@ -326,7 +490,7 @@
     font-family: var(--mono); font-size: 11px; color: var(--text2);
   }
   .file-tag .ft-icon { font-size: 12px; }
-  .file-tag .ft-count { color: var(--accent); font-weight: 600; }
+  .file-tag .ft-count { color: var(--accent-strong); font-weight: 600; }
 
   /* Help button & panel */
   .help-btn {
@@ -335,7 +499,8 @@
     font-weight: 600; padding: 3px 12px; border-radius: 20px;
     cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
   }
-  .help-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .theme-btn { min-width: 74px; }
+  .help-btn:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
   .help-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -354,17 +519,17 @@
     display: flex; align-items: center; justify-content: space-between;
     background: var(--surface2); border-radius: 16px 16px 0 0;
   }
-  .help-header h2 { font-family: var(--mono); font-size: 16px; color: var(--text); margin: 0; }
+  .help-header h2 { font-family: var(--display); font-size: 19px; color: var(--text); margin: 0; }
   .help-close {
     background: none; border: none; font-size: 20px; color: var(--text3);
     cursor: pointer; padding: 4px 8px; border-radius: 6px;
   }
-  .help-close:hover { color: var(--error); background: #fef5f5; }
+  .help-close:hover { color: var(--error); background: var(--error-bg); }
   .help-body { padding: 28px; }
   .help-section { margin-bottom: 28px; }
   .help-section:last-child { margin-bottom: 0; }
   .help-section h3 {
-    font-family: var(--mono); font-size: 13px; color: var(--accent);
+    font-family: var(--mono); font-size: 13px; color: var(--accent-strong);
     margin: 0 0 12px; letter-spacing: 0.06em;
     display: flex; align-items: center; gap: 8px;
   }
@@ -378,10 +543,10 @@
     display: inline-block; font-family: var(--mono); font-size: 10px;
     padding: 2px 8px; border-radius: 4px; vertical-align: middle;
   }
-  .help-tag-blue { background: #e8f0fc; color: #1a6fd4; }
-  .help-tag-green { background: #e4f7f2; color: #0b9e7a; }
-  .help-tag-orange { background: #fef3e2; color: #b45309; }
-  .help-tag-red { background: #fef5f5; color: #c0392b; }
+  .help-tag-blue { background: var(--blue-bg); color: var(--blue); }
+  .help-tag-green { background: var(--accent-light); color: var(--accent-strong); }
+  .help-tag-orange { background: var(--amber-bg); color: var(--amber-strong); }
+  .help-tag-red { background: var(--error-bg); color: var(--error); }
   .help-tip {
     background: var(--surface2); border: 1px solid var(--border);
     border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
@@ -405,11 +570,11 @@
     transition: all 0.18s; display: flex; align-items: flex-start; gap: 14px;
   }
   .mode-opt:hover { border-color: var(--accent); background: var(--accent-light); }
-  .mode-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px rgba(26,111,212,0.12); }
+  .mode-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px var(--accent-ring); }
   .mode-opt-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
   .mode-opt-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); }
   .mode-opt-sub { font-size: 11px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
-  .mode-badge { display: inline-block; font-size: 9px; font-family: var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(26,111,212,0.2); margin-left: 6px; vertical-align: middle; }
+  .mode-badge { display: inline-block; font-size: 9px; font-family: var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent-strong); border: 1px solid var(--accent-border); margin-left: 6px; vertical-align: middle; }
 
   /* Generic mode panel */
   .generic-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px; margin-top: 18px; box-shadow: var(--shadow); display: none; }
@@ -425,16 +590,16 @@
     transition: all 0.18s; display: flex; align-items: center; gap: 14px;
   }
   .fcra-opt:hover { border-color: var(--accent); background: var(--accent-light); }
-  .fcra-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px rgba(26,111,212,0.12); }
+  .fcra-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px var(--accent-ring); }
   .fcra-opt-icon { font-size: 24px; flex-shrink: 0; }
   .fcra-opt-title { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text); }
   .fcra-opt-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
 
   /* Date alert */
   .date-alert {
-    background: #fff8e6; border: 1px solid #f5c842; border-radius: 8px;
+    background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 8px;
     padding: 10px 14px; margin-bottom: 16px; font-size: 12px;
-    font-family: var(--mono); color: #7a5c00; display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); color: var(--warn-fg); display: flex; align-items: center; gap: 8px;
   }
   .date-alert-icon { font-size: 14px; }
 
@@ -455,6 +620,102 @@
   .email-field-value { color: var(--text); font-size: 12px; }
   .email-divider { height: 1px; background: var(--border); margin: 12px 0; }
   .email-body { color: var(--text); font-size: 12px; line-height: 1.8; }
+
+  /* Required marker & helper text */
+  .req { color: var(--error); font-weight: 600; }
+  .field-help { font-size: 11px; color: var(--text3); line-height: 1.5; }
+  .settings-reset {
+    background: none; border: none; color: var(--text3); font-family: var(--mono);
+    font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 5px;
+    text-transform: none; letter-spacing: 0.04em; flex-shrink: 0;
+  }
+  .config-title .settings-reset { order: 2; }
+  .settings-reset:hover { color: var(--accent-strong); background: var(--accent-light); }
+
+  /* CC email chips */
+  .chip-box {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
+    padding: 6px 8px; cursor: text; min-height: 40px;
+  }
+  .chip-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); background: var(--surface); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 11px;
+    background: var(--accent-light); color: var(--accent-strong); border: 1px solid var(--accent-border);
+    border-radius: 14px; padding: 3px 4px 3px 10px;
+  }
+  .chip.invalid { background: var(--error-bg); color: var(--error); border-color: var(--error-border); }
+  .chip button {
+    background: none; border: none; color: inherit; cursor: pointer; font-size: 13px;
+    line-height: 1; padding: 0 5px; border-radius: 10px; opacity: 0.7;
+  }
+  .chip button:hover { opacity: 1; background: var(--hover-tint); }
+  .chip-box input.chip-input {
+    flex: 1; min-width: 200px; border: none; background: transparent; padding: 4px; box-shadow: none;
+  }
+  .cc-count { color: var(--accent-strong); }
+
+  /* Validation states in the table */
+  td input.cell-input.cell-error, td input.cell-input.cell-error:not(:focus) { background: var(--error-bg); box-shadow: inset 0 0 0 1px var(--error-border); }
+  td input.cell-input.cell-warn,  td input.cell-input.cell-warn:not(:focus)  { background: var(--warn-bg); box-shadow: inset 0 0 0 1px var(--warn-border); }
+  td input.cell-input[readonly] { cursor: not-allowed; color: var(--text3); }
+  tr.row-dup td:first-child { box-shadow: inset 3px 0 0 var(--warn-border); }
+  .mail-badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px; padding: 1px 5px;
+    border-radius: 4px; background: var(--surface2); color: var(--text2);
+    border: 1px solid var(--border); margin-left: 4px; cursor: help; vertical-align: middle;
+  }
+  .mail-badge.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-fg); }
+  .row-del {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 13px; padding: 6px 10px; border-radius: 6px;
+  }
+  .row-del:hover { color: var(--error); background: var(--error-bg); }
+
+  /* Issues panel levels */
+  .issues-panel.ok { background: var(--accent-light); border-color: var(--accent-border); }
+  .issues-panel.ok .issues-title { color: var(--accent-strong); margin-bottom: 0; }
+  .issues-panel.warn-only { background: var(--warn-bg); border-color: var(--warn-border); }
+  .issues-panel.warn-only .issues-title { color: var(--warn-fg); }
+  .issue-row { cursor: pointer; border-radius: 4px; padding: 2px 4px; }
+  .issue-row:hover { background: var(--hover-tint); }
+  .issue-row .lvl-error { color: var(--error); }
+  .issue-row .lvl-warn  { color: var(--warn-fg); }
+  .issue-row .row-num { min-width: 64px; }
+
+  /* Download state */
+  .btn:disabled, .btn:disabled:hover {
+    opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none;
+  }
+  .download-hint { text-align: center; font-family: var(--mono); font-size: 11px; margin-top: 8px; min-height: 16px; }
+  .download-hint.error { color: var(--error); }
+  .download-hint.warn  { color: var(--warn-fg); }
+
+  /* Confirm modal */
+  .confirm-modal { text-align: left; max-width: 480px; }
+  .confirm-grid {
+    display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-family: var(--mono);
+    font-size: 12px; margin: 14px 0; padding: 14px 16px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  .confirm-grid dt { color: var(--text3); }
+  .confirm-grid dd { color: var(--text); font-weight: 600; margin: 0; word-break: break-all; }
+  .confirm-warn {
+    background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 8px; padding: 10px 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--warn-fg); margin-bottom: 14px;
+    max-height: 140px; overflow-y: auto; line-height: 1.6;
+  }
+  .confirm-modal .import-modal-btns { justify-content: flex-end; }
+
+  @media (max-width: 760px) {
+    header { padding: 0 16px; }
+    main { padding: 20px 16px 60px; }
+    .config-grid { grid-template-columns: 1fr; }
+    .summary-bar.visible { grid-template-columns: 1fr 1fr; }
+    .mode-options, .fcra-options, .mapping-grid { grid-template-columns: 1fr; }
+    .actions.visible { flex-wrap: wrap; }
+    #statsGrid { grid-template-columns: 1fr 1fr !important; }
+  }
 </style>
 </head>
 <body>
@@ -470,7 +731,8 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.0</div>
+    <div class="badge">v1.1</div>
+    <button class="help-btn theme-btn" id="themeBtn" onclick="cycleTheme()" title="Switch colour theme">◐ Auto</button>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -482,13 +744,13 @@
   </div>
 
   <div class="flow">
-    <div class="flow-step"><div class="dot" style="background:#1a6fd4"></div>ERPNext XLSX</div>
+    <div class="flow-step"><div class="dot" style="background:var(--blue)"></div>ERPNext XLSX</div>
     <div class="flow-arrow">→</div>
-    <div class="flow-step"><div class="dot" style="background:#0b9e7a"></div>Sanitize Fields</div>
+    <div class="flow-step"><div class="dot" style="background:var(--accent)"></div>Sanitize &amp; Check</div>
     <div class="flow-arrow">→</div>
-    <div class="flow-step"><div class="dot" style="background:#d97706"></div>Kotak XLS</div>
+    <div class="flow-step"><div class="dot" style="background:var(--accent2)"></div>Kotak XLS</div>
     <div class="flow-arrow">+</div>
-    <div class="flow-step"><div class="dot" style="background:#e05c1a"></div>Kotak TXT</div>
+    <div class="flow-step"><div class="dot" style="background:var(--accent3)"></div>Kotak TXT</div>
   </div>
 
   <!-- Import Modal -->
@@ -582,56 +844,57 @@
   </div>
 
   <div class="config-panel" id="configPanel">
-    <div class="config-title">Payment Configuration</div>
+    <div class="config-title">Payment Configuration
+      <button class="settings-reset" id="resetSettingsBtn" title="Restore the default client code, CC emails, saved debit accounts and email settings">↺ Restore default settings</button>
+    </div>
     <div class="date-alert" id="dateAlert" style="display:none;">
       <span class="date-alert-icon">⚠</span>
       <span id="dateAlertText"></span>
     </div>
     <div class="config-grid">
       <div class="field-group">
-        <label>Client Code</label>
+        <label for="cfgClientCode">Client Code</label>
         <input type="text" id="cfgClientCode" value="CIIEI">
       </div>
       <div class="field-group">
-        <label>Product Code</label>
+        <label for="cfgProductCode">Product Code</label>
         <input type="text" id="cfgProductCode" value="RPAY">
       </div>
       <div class="field-group">
-        <label>Payment Type (default for new rows)</label>
-        <select id="cfgPaymentType" onchange="onPaymentTypeChange()">
-          <option value="NEFT">NEFT</option>
-          <option value="IFT">IFT — Kotak to Kotak</option>
-        </select>
+        <label for="cfgBankCode">Bank Code Indicator</label>
+        <input type="text" id="cfgBankCode" value="M" maxlength="1">
       </div>
       <div class="field-group">
-        <label>Fund Type</label>
+        <label for="cfgFundType">Fund Type</label>
         <input type="text" id="cfgFundType" value="Non-FCRA" readonly style="background:var(--surface2);cursor:default;">
       </div>
       <div class="field-group">
-        <label>Debit A/C</label>
-        <input type="text" id="cfgDebitAc" value="" placeholder="Enter debit account number">
+        <label for="cfgDebitAc">Debit A/C <span class="req">*</span></label>
+        <input type="text" id="cfgDebitAc" value="" placeholder="Enter debit account number" inputmode="numeric" autocomplete="off">
+        <div class="field-help">Remembered separately for FCRA and Non-FCRA.</div>
       </div>
       <div class="field-group">
-        <label>Bank Code Indicator</label>
-        <input type="text" id="cfgBankCode" value="M" maxlength="1">
-      </div>
-      <div class="field-group" style="grid-column:1/-1;">
-        <label style="color:var(--error);letter-spacing:0.06em;">★ DATE OF PAYMENT — must be today or future · bank rejects backdated dates</label>
-        <input type="date" id="cfgPayDate" style="border:2px solid var(--accent);font-size:14px;padding:11px 14px;">
-      </div>
-      <div class="field-group full">
-        <label>CC Emails — comma-separated · Supplier Email (col V) &amp; Creator Email (col AF) auto-added per row</label>
-        <input type="text" id="cfgEmails" value="hetalc@iima.ac.in,purushottamn@iima.ac.in,vipinn@iima.ac.in,roshand@iima.ac.in">
-      </div>
-      <div class="field-group">
-        <label>Filter: Workflow State</label>
+        <label for="cfgFilter">Filter: Workflow State</label>
         <select id="cfgFilter">
           <option value="To Pay">To Pay only</option>
           <option value="all">All rows</option>
         </select>
+        <div class="field-help">Applies to the next file you upload.</div>
+      </div>
+      <div class="field-group" style="grid-column:1/-1;">
+        <label for="cfgPayDate" style="color:var(--error);letter-spacing:0.06em;">Date of payment <span class="req">*</span> — must be today or a future date · the bank rejects backdated dates</label>
+        <input type="date" id="cfgPayDate" style="border:2px solid var(--accent);font-size:14px;padding:11px 14px;">
+      </div>
+      <div class="field-group full">
+        <label for="ccAddInput">CC Emails <span class="cc-count" id="ccCount"></span></label>
+        <div class="chip-box" id="ccChips">
+          <input type="text" id="ccAddInput" class="chip-input" placeholder="Type an email and press Enter" autocomplete="off">
+        </div>
+        <input type="hidden" id="cfgEmails" value="hetalc@iima.ac.in,purushottamn@iima.ac.in,vipinn@iima.ac.in,roshand@iima.ac.in,amitkj@iima.ac.in">
+        <div class="field-help">Added to every payment. The supplier email (col V) and creator email (col AF) are added per row — hover ✉ in the table to see a row's full list.</div>
       </div>
       <div class="field-group">
-        <label>Letter / Batch No (for email subject)</label>
+        <label for="cfgLetterNo">Letter / Batch No (for email subject)</label>
         <input type="text" id="cfgLetterNo" placeholder="e.g. 01">
       </div>
     </div>
@@ -645,7 +908,7 @@
   </div>
 
   <div class="issues-panel" id="issuesPanel">
-    <div class="issues-title">⚠ Rows with Missing Data</div>
+    <div class="issues-title" id="issuesTitle">Checks before download</div>
     <div id="issuesList"></div>
   </div>
 
@@ -657,7 +920,8 @@
         <span class="edit-badge" id="editBadge">edited</span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="refresh-btn" id="refreshBtn" title="Re-apply config to all rows (keeps uploaded data)">↺ Refresh</button>
+        <button class="refresh-btn" id="undoDeleteBtn" style="display:none;" title="Bring back the row you just removed">↶ Undo remove</button>
+        <button class="refresh-btn" id="refreshBtn" title="Clear your table edits and re-apply the configuration (keeps uploaded data)">↺ Refresh</button>
         <button class="reset-btn"   id="resetBtn"   title="Clear everything and start over">✕ Reset All</button>
       </div>
     </div>
@@ -675,6 +939,7 @@
             <th>Debit A/C</th>
             <th>Enr-1 (Inv No)</th>
             <th>Enrichment-2 (Purpose)</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="previewBody"></tbody>
@@ -689,32 +954,39 @@
     <button class="btn btn-secondary" id="btnTxt">⬇ Download Kotak TXT</button>
     <button class="btn btn-outline"   id="btnBoth">⬇ Download Both</button>
   </div>
+  <div class="download-hint" id="downloadHint"></div>
 
-  <!-- Email Approval Template -->
-  <div class="email-template-panel" id="emailTemplatePanel">
-    <div class="config-title">Email Approval Template</div>
-    <div class="email-preview-box">
-      <div class="email-field-row">
-        <span class="email-field-label">To</span>
-        <span class="email-field-value">Amitkumar, Roshan, Purushottam, Hetal, Neeraj, Sanea</span>
+  <!-- Confirm Download Modal -->
+  <div class="import-modal-overlay" id="confirmModal">
+    <div class="import-modal confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h3 id="confirmTitle">Confirm payment file</h3>
+      <p style="margin-bottom:0;">Check these details before uploading to the bank.</p>
+      <dl class="confirm-grid" id="confirmGrid"></dl>
+      <div class="confirm-warn" id="confirmWarn" style="display:none;"></div>
+      <div class="import-modal-btns">
+        <button class="btn btn-outline" id="btnCancelDownload">Cancel</button>
+        <button class="btn btn-primary" id="btnConfirmDownload">Confirm &amp; Download</button>
       </div>
-      <div class="email-field-row">
-        <span class="email-field-label">Subject</span>
-        <span class="email-field-value" id="emailSubject">—</span>
-      </div>
-      <div class="email-divider"></div>
-      <div class="email-body" id="emailBody"></div>
     </div>
-    <button class="btn btn-outline" id="btnCopyEmail" style="margin-top:12px;">⧉ Copy Email Body</button>
   </div>
 
   <!-- Email Approval Template -->
   <div class="email-template-panel" id="emailTemplatePanel">
     <div class="config-title">Email Approval Template</div>
+    <div class="config-grid" style="grid-template-columns:2fr 1fr;">
+      <div class="field-group">
+        <label for="emailTo">To (names shown in the email header)</label>
+        <input type="text" id="emailTo" value="Amitkumar, Roshan, Purushottam, Hetal, Neeraj, Sanea">
+      </div>
+      <div class="field-group">
+        <label for="emailSign">Signature name</label>
+        <input type="text" id="emailSign" value="Vipin Nair">
+      </div>
+    </div>
     <div class="email-preview-box">
       <div class="email-field-row">
         <span class="email-field-label">To</span>
-        <span class="email-field-value">Amitkumar, Roshan, Purushottam, Hetal, Neeraj, Sanea</span>
+        <span class="email-field-value" id="emailToPreview"></span>
       </div>
       <div class="email-field-row">
         <span class="email-field-label">Subject</span>
@@ -769,14 +1041,15 @@
         <h3><span class="h-icon">1&#xFE0F;&#x20E3;</span> Choose Your Mode</h3>
         <p>When you open the app, you see two mode options at the top:</p>
         <ul>
-          <li><span class="help-tag help-tag-blue">ERP MODE</span> — Use this when you have an <strong>ERPNext Vendor Payment Report</strong> or <strong>Expense Claim Report</strong>. The app reads the columns, maps them to Kotak format, and lets you edit before downloading.</li>
-          <li><span class="help-tag help-tag-orange">GENERIC MODE</span> — Use this when you already have a <strong>pre-formatted Kotak Excel file</strong> (like the one made by the old KMBL Excel tool). It just converts the columns to a tilde-separated TXT file. No field mapping.</li>
+          <li><span class="help-tag help-tag-blue">ERP MODE</span> — Use this when you have an <strong>ERPNext Vendor Payment Report</strong> or <strong>Expense Claim Report</strong>. The app reads the columns, maps them to Kotak format, checks every row, and lets you edit before downloading.</li>
+          <li><span class="help-tag help-tag-orange">GENERIC MODE</span> — Use this when you already have a <strong>pre-formatted Kotak Excel file</strong> (like the one made by the old KMBL Excel tool). It just converts the columns to a tilde-separated TXT file. No field mapping and no checks.</li>
         </ul>
       </div>
 
       <div class="help-section">
         <h3><span class="h-icon">2&#xFE0F;&#x20E3;</span> Select Fund Type</h3>
-        <p>Click <span class="help-tag help-tag-blue">Non-FCRA</span> for regular vendor payments, or <span class="help-tag help-tag-green">FCRA</span> for foreign contribution payments. This is just a label — you must still type the correct Debit A/C number manually.</p>
+        <p>Click <span class="help-tag help-tag-blue">Non-FCRA</span> for regular vendor payments, or <span class="help-tag help-tag-green">FCRA</span> for foreign contribution payments.</p>
+        <div class="help-tip">The app remembers a separate Debit A/C for FCRA and for Non-FCRA. Switching the fund type switches to that fund's saved account, so the two are never mixed up. Always check the account in the confirmation box before downloading.</div>
       </div>
 
       <div class="help-section">
@@ -787,45 +1060,61 @@
           <li><strong>Expense Claim Report</strong> (.xlsx) — detected by sheet name "Expense Claim" or column "Employee Name"</li>
           <li><strong>Multiple files</strong> — select more than one file at once</li>
         </ul>
-        <div class="help-tip">If you already have data loaded and upload another file, a popup asks:<br><strong>+ Add to existing</strong> = append new rows below current ones<br><strong>Replace all</strong> = clear everything and load only the new file</div>
+        <div class="help-tip">If you already have data loaded and upload another file, a popup asks:<br><strong>+ Add to existing</strong> = append new rows below current ones<br><strong>Replace all</strong> = clear everything and load only the new file<br>If you add the same file twice, the app warns you and flags the repeated payments as possible duplicates.</div>
+        <p>The <strong>Filter: Workflow State</strong> setting ("To Pay only" or "All rows") applies to the next file you upload.</p>
       </div>
 
       <div class="help-section">
-        <h3><span class="h-icon">4&#xFE0F;&#x20E3;</span> Set the Payment Date</h3>
-        <p>This is the most important field! The date defaults to <strong>today</strong>.</p>
-        <div class="help-tip" style="border-left-color:#c0392b;">
-          <span class="help-tag help-tag-red">WARNING</span> If you set a past date, Kotak Bank will reject the file with <strong>"Backdated Transaction Date"</strong> error. Always use today or a future date.
+        <h3><span class="h-icon">4&#xFE0F;&#x20E3;</span> Set the Payment Date <span class="req">*</span></h3>
+        <p>This is the most important field. The date defaults to <strong>today</strong>, and every row uses it unless you edit that row's date.</p>
+        <div class="help-tip" style="border-left-color:var(--error);">
+          <span class="help-tag help-tag-red">BLOCKS DOWNLOAD</span> A past date is rejected by Kotak Bank with <strong>"Backdated Transaction Date"</strong>. The app shows a warning and will not let you download until the date is today or later.
         </div>
       </div>
 
       <div class="help-section">
-        <h3><span class="h-icon">5&#xFE0F;&#x20E3;</span> Fill the Debit Account</h3>
-        <p>Type your Kotak Debit A/C number in the configuration panel. This number auto-fills into all rows. You only need to type it once.</p>
-        <div class="help-tip">If you manually edit a specific row's Debit A/C in the table below, that row keeps your manual value even if you change the config later.</div>
+        <h3><span class="h-icon">5&#xFE0F;&#x20E3;</span> Fill the Debit Account <span class="req">*</span></h3>
+        <p>Type your Kotak Debit A/C number in the configuration panel. It fills into every row, and it is remembered for next time (per fund type).</p>
+        <div class="help-tip">If you edit one row's Debit A/C in the table, that row keeps your value even if you change the configuration later. Download stays disabled while the Debit A/C is empty.</div>
       </div>
 
       <div class="help-section">
-        <h3><span class="h-icon">6&#xFE0F;&#x20E3;</span> Review the Converted Rows</h3>
-        <p>After upload, all rows appear in an editable table. You can click on <strong>any cell</strong> to change its value — Beneficiary Name, IFSC, Account No, Amount, Date, everything.</p>
+        <h3><span class="h-icon">6&#xFE0F;&#x20E3;</span> CC Emails</h3>
+        <p>Each CC email is shown as a chip. The count is next to the label.</p>
         <ul>
-          <li><span class="help-tag help-tag-blue">NEFT</span> and <span class="help-tag help-tag-green">IFT</span> — Each row has its own payment type dropdown. If the beneficiary bank is Kotak (IFSC starts with KKBK), it auto-selects IFT and sets IFSC to KKBK0000958.</li>
-          <li>Edited cells turn <strong style="background:#fffbe6;padding:1px 4px;">yellow</strong> so you can see what changed.</li>
-          <li>Each row shows <span class="help-tag help-tag-blue">VEN</span> or <span class="help-tag help-tag-orange">EXP</span> badge to identify Vendor vs Expense Claim rows.</li>
+          <li><strong>Add</strong> — type an address and press <strong>Enter</strong> or comma. You can also paste several addresses at once.</li>
+          <li><strong>Remove</strong> — click the <strong>×</strong> on a chip.</li>
+          <li>A <span class="help-tag help-tag-red">red chip</span> is not a valid address (for example <code>name@iima,ac.in</code>). Fix it before downloading.</li>
+          <li>For each row, the supplier email (col V) and creator email (col AF) are added automatically. Hover the <strong>✉</strong> badge on a row to see its full email list.</li>
         </ul>
       </div>
 
       <div class="help-section">
-        <h3><span class="h-icon">7&#xFE0F;&#x20E3;</span> Use Refresh & Reset</h3>
-        <dl class="help-grid">
-          <dt>&#8634; Refresh</dt>
-          <dd>Clears all manual edits and re-applies the current configuration to all rows. Your uploaded data stays.</dd>
-          <dt>&times; Reset All</dt>
-          <dd>Clears everything — data, config, preview. You start from scratch.</dd>
-        </dl>
+        <h3><span class="h-icon">7&#xFE0F;&#x20E3;</span> Review and Edit the Rows</h3>
+        <p>After upload, all rows appear in an editable table. Click any cell to change it — Beneficiary Name, IFSC, Account No, Amount, Date, Debit A/C, Enrichments.</p>
+        <ul>
+          <li><span class="help-tag help-tag-blue">NEFT</span> and <span class="help-tag help-tag-green">IFT</span> — Each row has its own payment type. If the beneficiary bank is Kotak (IFSC starts with KKBK), it auto-selects IFT and uses IFSC KKBK0000958. The IFSC cell is locked on IFT rows; switch the row to NEFT to edit it.</li>
+          <li>Edited cells turn <strong style="background:var(--edit-bg);padding:1px 4px;">yellow</strong>. Typing the original value back clears the highlight.</li>
+          <li>Your edits flow everywhere: the bank files, the totals, the stats <strong>and the approval email</strong> always show the same amounts.</li>
+          <li>Click <strong>✕</strong> at the end of a row to remove that payment. <strong>↶ Undo remove</strong> brings back the last removed row.</li>
+          <li>Each row shows a <span class="help-tag help-tag-blue">VEN</span> or <span class="help-tag help-tag-orange">EXP</span> badge for Vendor or Expense Claim rows.</li>
+        </ul>
       </div>
 
       <div class="help-section">
-        <h3><span class="h-icon">8&#xFE0F;&#x20E3;</span> Download Payment Files</h3>
+        <h3><span class="h-icon">8&#xFE0F;&#x20E3;</span> Checks Before Download</h3>
+        <p>The app checks every row as you work. The panel above the table lists what it found; click any item to jump to the cell.</p>
+        <dl class="help-grid">
+          <dt><span class="help-tag help-tag-red">Error</span></dt>
+          <dd>Download is disabled until fixed: empty Debit A/C, past date, invalid CC email, empty name, missing or invalid IFSC (must be 11 characters like HDFC0001234), empty account number, amount not a number or not more than 0, a row date that is not DD/MM/YYYY.</dd>
+          <dt><span class="help-tag help-tag-orange">Warning</span></dt>
+          <dd>You can still download, after confirming: possible duplicate payment (same account, amount and invoice no), account number with letters or unusual length, amount with more than 2 decimals, invalid supplier/creator email.</dd>
+        </dl>
+        <div class="help-tip">Problem cells are coloured red (error) or amber (warning). Hover a cell to see why. When everything passes, the panel turns green.</div>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">9&#xFE0F;&#x20E3;</span> Download Payment Files</h3>
         <p>Three download buttons at the bottom:</p>
         <dl class="help-grid">
           <dt>Kotak XLS</dt>
@@ -835,25 +1124,44 @@
           <dt>Download Both</dt>
           <dd>Downloads XLS first, then TXT half a second later.</dd>
         </dl>
+        <div class="help-tip">Before anything downloads, a confirmation box shows the fund type, number of payments, exact total, Debit A/C, payment date and NEFT/IFT split, plus any warnings. Check it, then click <strong>Confirm &amp; Download</strong>.</div>
       </div>
 
       <div class="help-section">
-        <h3><span class="h-icon">9&#xFE0F;&#x20E3;</span> Email Approval Template</h3>
+        <h3><span class="h-icon">&#x1F51F;</span> Email Approval Template</h3>
         <p>After uploading, an approval email is auto-generated with a table of all payments. Use it to get payment approval from management.</p>
         <ul>
-          <li><strong>Copy Email</strong> — copies subject + body to clipboard. Paste into Outlook or Gmail.</li>
-          <li><strong>Download Email as Excel</strong> — downloads the payment table as a separate .xlsx file for attaching to the approval email.</li>
-          <li>Set the <strong>Letter No</strong> field (e.g. 01, 02) in configuration — it feeds into the email subject line.</li>
+          <li><strong>To</strong> and <strong>Signature name</strong> are editable at the top of the panel and are remembered.</li>
+          <li><strong>Copy Email</strong> — copies subject + body to the clipboard. Paste into Outlook or Gmail.</li>
+          <li><strong>Download Email as Excel</strong> — downloads the payment table as a .xlsx file to attach to the approval email.</li>
+          <li>Set the <strong>Letter / Batch No</strong> (e.g. 01, 02) in configuration — it goes into the email subject line.</li>
         </ul>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">&#x1F504;</span> Refresh, Reset &amp; Saved Settings</h3>
+        <dl class="help-grid">
+          <dt>&#8634; Refresh</dt>
+          <dd>Clears all your table edits and re-applies the current configuration. Your uploaded data stays.</dd>
+          <dt>&times; Reset All</dt>
+          <dd>Clears the uploaded data and preview. You start from scratch.</dd>
+          <dt>Saved settings</dt>
+          <dd>Client code, product code, bank code, CC emails, workflow filter, Debit A/C (per fund type), email To and signature are saved <strong>in this browser only</strong>. They are not shared with anyone else.</dd>
+          <dt>&#8634; Restore defaults</dt>
+          <dd>The link in the Payment Configuration heading puts all saved settings back to the original defaults.</dd>
+          <dt>&#9680; Theme</dt>
+          <dd>The header button switches between Auto (follows your computer), Light and Dark.</dd>
+        </dl>
       </div>
 
       <div class="help-section">
         <h3><span class="h-icon">&#x26A0;&#xFE0F;</span> Things That Cause Bank Rejection</h3>
         <ul>
-          <li><span class="help-tag help-tag-red">Backdated Date</span> — Payment date in the past. Always use today or future.</li>
-          <li><span class="help-tag help-tag-red">Special Characters</span> — Only A-Z, 0-9, space, / and - are allowed in text fields. The app auto-strips everything else.</li>
-          <li><span class="help-tag help-tag-red">Wrong IFSC</span> — If payment type is IFT, IFSC must be KKBK0000958 (Kotak). The app handles this automatically.</li>
-          <li><span class="help-tag help-tag-red">Missing A/C Number</span> — Bank account starting with 0 (e.g. 00123456) must keep the leading zeros. The app preserves them.</li>
+          <li><span class="help-tag help-tag-red">Backdated Date</span> — Payment date in the past. The app blocks download until fixed.</li>
+          <li><span class="help-tag help-tag-red">Special Characters</span> — Only A-Z, 0-9, space, / and - are allowed in text fields. The app auto-strips everything else, including in cells you edit.</li>
+          <li><span class="help-tag help-tag-red">Wrong IFSC</span> — IFT rows must use KKBK0000958 (handled automatically). NEFT IFSCs are checked for the correct 11-character format.</li>
+          <li><span class="help-tag help-tag-red">Empty Debit A/C</span> — The app blocks download until it is filled.</li>
+          <li><span class="help-tag help-tag-red">Leading zeros</span> — Bank accounts starting with 0 (e.g. 00123456) must keep the zeros. The app preserves them.</li>
         </ul>
       </div>
 
@@ -880,6 +1188,8 @@
           <dd>Supplier Invoice Number or Expense Claim ID</dd>
           <dt>Enrichment-2</dt>
           <dd>Purpose / narration text</dd>
+          <dt>Required <span class="req">*</span></dt>
+          <dd>Debit A/C and Date of payment</dd>
         </dl>
       </div>
 
@@ -894,7 +1204,10 @@
       <a href="tel:+918160203197" style="color:var(--accent);text-decoration:none;">+91 8160203197</a>
     </div>
     <div>for <strong style="color:var(--text);">CIIE Initiatives (IIMA Ventures)</strong></div>
-    <div style="margin-top:6px;font-size:10px;color:var(--text3);">&copy; Vipin Nair. All rights reserved.</div>
+    <div style="margin-top:6px;font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:-0.01em;color:var(--text);">
+      <span style="color:var(--accent-strong);">Miyee</span><span style="color:var(--amber-strong);">India</span> Tech Labs
+    </div>
+    <div style="font-size:10px;color:var(--text3);">&copy; Vipin Nair. All rights reserved.</div>
   </div>
 </footer>
 
@@ -974,23 +1287,14 @@ function setFcra(fcra) {
   document.getElementById('optFcra').classList.toggle('selected', fcra);
   document.getElementById('optNonFcra').classList.toggle('selected', !fcra);
   document.getElementById('cfgFundType').value = fcra ? 'FCRA' : 'Non-FCRA';
-  document.getElementById('cfgDebitAc').value  = '';  // must be entered manually
-  if (parsedRows.length) { renderPreview(); renderEmailTemplate(); }
-}
-
-// ─── Payment Type Logic ─────────────────────────────────────────────────────
-var KOTAK_IFSC = 'KKBK0000958';
-
-function onPaymentTypeChange() {
+  document.getElementById('cfgDebitAc').value  = savedDebit();  // FCRA and Non-FCRA each keep their own debit A/C
   if (parsedRows.length) renderPreview();
 }
 
-// For each row: if IFT mode, override IFSC to KKBK0000958 (Kotak)
-function getEffectiveIfsc(r) {
-  var cfg = getConfig();
-  if (cfg.paymentType === 'IFT') return KOTAK_IFSC;
-  return r._ifsc || r.ifsc;
-}
+// ─── Payment Type Logic ─────────────────────────────────────────────────────
+// Each row is NEFT or IFT (auto: IFT when the beneficiary IFSC starts with KKBK).
+// IFT rows always use the Kotak IFSC below.
+var KOTAK_IFSC = 'KKBK0000958';
 
 // ─── Date helpers ───────────────────────────────────────────────────────────
 function todayStr() {
@@ -1000,11 +1304,10 @@ function todayStr() {
     String(d.getDate()).padStart(2,'0');
 }
 
-function fmtDateFromISO(iso) {
-  const d = new Date(iso);
-  return String(d.getDate()).padStart(2,'0') + '/' +
-    String(d.getMonth()+1).padStart(2,'0') + '/' +
-    d.getFullYear();
+// 'YYYY-MM-DD' as a local date (new Date(iso) would read it as UTC midnight)
+function parseISODate(iso) {
+  var p = String(iso || '').split('-');
+  return new Date(+p[0], +p[1] - 1, +p[2]);
 }
 
 function checkDateAlert() {
@@ -1012,11 +1315,11 @@ function checkDateAlert() {
   const box  = document.getElementById('dateAlert');
   const txt  = document.getElementById('dateAlertText');
   if (!val) {
-    txt.textContent = 'No payment date set — ERP Posting Date will be used, which may be backdated and cause rejection.';
+    txt.textContent = 'No payment date set — today\'s date will be used.';
     box.style.display = 'flex';
     return;
   }
-  const sel   = new Date(val); sel.setHours(0,0,0,0);
+  const sel   = parseISODate(val);
   const today = new Date();    today.setHours(0,0,0,0);
   if (sel < today) {
     txt.textContent = 'Date ' + val + ' is in the past — Kotak will reject with "Backdated Transaction Date". Use today or a future date.';
@@ -1254,6 +1557,7 @@ function detectFileType(wb) {
 }
 
 function mergeRows(newRows, append, fname, ftype, count) {
+  var already = append && loadedFiles.some(function(f){ return f.name === fname; });
   if (append) {
     parsedRows = parsedRows.concat(newRows);
   } else {
@@ -1262,11 +1566,9 @@ function mergeRows(newRows, append, fname, ftype, count) {
   }
 
   loadedFiles.push({name: fname, type: ftype, count: count});
+  clearUndo();
   renderFileTags();
-  renderIssues([]);
-  renderPreview();
-  renderSummary();
-  showUI();
+  showUI(already ? fname + ' was already loaded — check the duplicate warnings' : null);
 }
 
 function renderFileTags() {
@@ -1278,7 +1580,7 @@ function renderFileTags() {
     var cls  = f.type === 'expense' ? 'src-expense' : 'src-vendor';
     return '<div class="file-tag">' +
       '<span class="ft-icon">' + icon + '</span>' +
-      '<span>' + f.name + '</span>' +
+      '<span>' + esc(f.name) + '</span>' +
       '<span class="ft-count">' + f.count + ' rows</span>' +
       '<span class="src-badge ' + cls + '">' + f.type.toUpperCase() + '</span>' +
       '</div>';
@@ -1350,6 +1652,7 @@ function processGeneric(wb) {
   document.getElementById('sumTds2').textContent    = '—';
   document.getElementById('sumTdsRows').textContent = '—';
   document.getElementById('summaryBar').classList.add('visible');
+  updateDownloadState(null);
 
   showToast('Loaded ' + genericRows.length + ' rows (Generic mode)');
 }
@@ -1489,35 +1792,29 @@ function parseExpenseClaim(rows) {
   });
 }
 
-function renderIssues(issues) {
-  var panel = document.getElementById('issuesPanel');
-  var list  = document.getElementById('issuesList');
-  if (!issues.length) { panel.classList.remove('visible'); return; }
-  panel.classList.add('visible');
-  list.innerHTML = issues.map(function(i){
-    return '<div class="issue-row"><span class="row-num">Row ' + i.row + ' (' + i.id + ')</span><span>Missing: ' + i.missing.join(', ') + '</span></div>';
-  }).join('');
-}
+// ─── Row values: table edits override ERP data ───────────────────────────────
+// An edit is stored as r._<field>. An emptied cell stays empty (it does not fall
+// back to the ERP value) so the checks can flag it instead of hiding it.
+var EDIT_FIELDS = ['name','ifsc','accNo','amount','date','debit','enr1','enr2'];
+var ERP_THEAD   = document.querySelector('#previewPanel thead tr').innerHTML;
+var IFSC_RE     = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+var EMAIL_RE    = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
 
 function getEnr1(r) {
   return sanitize(r.invNo);
 }
 
 function getConfig() {
-  var raw     = document.getElementById('cfgPayDate').value || todayStr();
-  var d       = new Date(raw);
-  var payDate = String(d.getDate()).padStart(2,'0') + '/' +
-                String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+  var raw = document.getElementById('cfgPayDate').value || todayStr();
   return {
     clientCode:  document.getElementById('cfgClientCode').value  || 'CIIEI',
     productCode: document.getElementById('cfgProductCode').value || 'RPAY',
-    paymentType: document.getElementById('cfgPaymentType').value || 'NEFT',
-    debitAc:     document.getElementById('cfgDebitAc').value     || '',
+    debitAc:     (document.getElementById('cfgDebitAc').value || '').trim(),
     bankCode:    document.getElementById('cfgBankCode').value    || 'M',
     emails:      document.getElementById('cfgEmails').value      || '',
     letterNo:    document.getElementById('cfgLetterNo').value    || '01',
     fundType:    document.getElementById('cfgFundType').value    || 'Non-FCRA',
-    payDate:     payDate,
+    payDate:     fmtDate(parseISODate(raw)),
     payDateRaw:  raw,
   };
 }
@@ -1534,140 +1831,397 @@ function buildEmails(r, ccEmails) {
 }
 
 function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
 
-function markEdited(input, rowIdx, field) {
-  var orig = parsedRows[rowIdx]['_orig_' + field];
-  if (orig === undefined) orig = parsedRows[rowIdx][field];
-  input.classList.toggle('cell-edited', input.value !== String(orig||''));
-  var anyEdited = document.querySelectorAll('.cell-edited').length > 0;
-  document.getElementById('editBadge').classList.toggle('visible', anyEdited);
+function plural(n, word) {
+  return n + ' ' + word + (n === 1 ? '' : 's');
 }
 
-function readTableEdits() {
-  // Read all editable cells back into parsedRows before building output
-  parsedRows.forEach(function(r, i) {
-    var get = function(id){ var el=document.getElementById(id+i); return el?el.value:null; };
-    var getSel = function(id){ var el=document.getElementById(id+i); return el?el.value:null; };
-    if (getSel('cel_pmtType') !== null) r._pmtType = getSel('cel_pmtType');
-    if (get('cel_name')   !== null) r._name   = get('cel_name');
-    if (get('cel_ifsc')   !== null) r._ifsc   = get('cel_ifsc');
-    if (get('cel_accNo')  !== null) r._accNo  = get('cel_accNo');
-    if (get('cel_amount') !== null) r._amount = parseFloat(get('cel_amount'))||r.amount;
-    if (get('cel_date')   !== null) r._date   = get('cel_date');
-    if (get('cel_debit')  !== null) r._debit  = get('cel_debit');
-    if (get('cel_enr1')   !== null) r._enr1   = get('cel_enr1');
-    if (get('cel_enr2')   !== null) r._enr2   = get('cel_enr2');
+function isEdited(r, f) {
+  return r['_' + f] !== undefined;
+}
+
+// What a cell shows (and the bank file uses) when it has not been edited
+function defaultValue(r, f, cfg) {
+  switch (f) {
+    case 'name':   return sanitize(cleanVendor(r.supplier));
+    case 'ifsc':   return String(r.ifsc || '').trim().toUpperCase();
+    case 'accNo':  return String(r.accNo || '').trim();
+    case 'amount': return String(r.amount);
+    case 'date':   return cfg.payDate;
+    case 'debit':  return cfg.debitAc;
+    case 'enr1':   return getEnr1(r);
+    case 'enr2':   return sanitize(r.purpose);
+  }
+  return '';
+}
+
+function cellValue(r, f, cfg) {
+  return isEdited(r, f) ? r['_' + f] : defaultValue(r, f, cfg);
+}
+
+// Accepts 12345, 12,345.50 or ₹12345 — anything else is NaN
+function parseAmount(v) {
+  if (typeof v === 'number') return v;
+  var s = String(v == null ? '' : v).replace(/[,\s₹]/g, '');
+  return /^\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+}
+
+function rowPmtType(r) {
+  return r._pmtType || r.pmtType || 'NEFT';
+}
+
+// Final values for one payment — used by the table, both bank files, the
+// summary, the stats, the approval email and the checks, so they always agree
+function effRow(r, cfg) {
+  var pmt = rowPmtType(r);
+  return {
+    pmtType: pmt,
+    name:    sanitize(cleanVendor(cellValue(r, 'name', cfg))),
+    ifsc:    pmt === 'IFT' ? KOTAK_IFSC : String(cellValue(r, 'ifsc', cfg)).trim().toUpperCase(),
+    accNo:   String(cellValue(r, 'accNo', cfg)).trim(),
+    amount:  parseAmount(cellValue(r, 'amount', cfg)),
+    date:    String(cellValue(r, 'date', cfg)).trim(),
+    debit:   String(cellValue(r, 'debit', cfg)).trim(),
+    enr1:    sanitize(cellValue(r, 'enr1', cfg)),
+    enr2:    sanitize(cellValue(r, 'enr2', cfg)),
+    emails:  buildEmails(r, cfg.emails),
+  };
+}
+
+function safeAmount(e) {
+  return isNaN(e.amount) ? 0 : e.amount;
+}
+
+// Name for the approval email: keeps readable punctuation unless edited
+function emailName(r) {
+  return isEdited(r, 'name') ? String(r._name).trim() : cleanVendor(r.supplier);
+}
+
+function hasEdits() {
+  return parsedRows.some(function(r){
+    return Object.keys(r).some(function(k){ return k.charAt(0) === '_'; });
   });
 }
 
-// When payment type changes on a row: update IFSC accordingly
-function onPmtTypeChange(sel) {
-  var i    = parseInt(sel.getAttribute('data-row'));
-  var type = sel.value;
-  parsedRows[i]._pmtType = type;
-  sel.className = 'cell-select pmt-' + type.toLowerCase() + ' cell-edited';
-  document.getElementById('editBadge').classList.add('visible');
+// ─── Checks before download ──────────────────────────────────────────────────
+function isValidEmail(e) {
+  return EMAIL_RE.test(e);
+}
 
-  // Auto-update IFSC for this row
-  var ifscInput = document.getElementById('cel_ifsc' + i);
-  if (ifscInput) {
-    if (type === 'IFT') {
-      ifscInput.value = KOTAK_IFSC;
-      parsedRows[i]._ifsc = KOTAK_IFSC;
-    } else {
-      // Restore original IFSC
-      ifscInput.value = parsedRows[i].ifsc;
-      parsedRows[i]._ifsc = parsedRows[i].ifsc;
+function parseDMY(s) {
+  var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(s || '').trim());
+  if (!m) return null;
+  var d = new Date(+m[3], +m[2] - 1, +m[1]);
+  if (d.getFullYear() !== +m[3] || d.getMonth() !== +m[2] - 1 || d.getDate() !== +m[1]) return null;
+  return d;
+}
+
+function todayMidnight() {
+  var t = new Date(); t.setHours(0,0,0,0);
+  return t;
+}
+
+// Returns { global: [...], rows: {rowIndex: [...]}, errors, warnings }.
+// Each issue is {level: 'error'|'warn', field, msg}. Errors block download.
+function validateAll() {
+  var cfg   = getConfig();
+  var today = todayMidnight();
+  var v     = { global: [], rows: {}, errors: 0, warnings: 0 };
+
+  function add(list, level, field, msg) {
+    list.push({ level: level, field: field, msg: msg });
+    if (level === 'error') v.errors++; else v.warnings++;
+  }
+  function rowAdd(i, field, level, msg) {
+    v.rows[i] = v.rows[i] || [];
+    add(v.rows[i], level, field, msg);
+  }
+
+  var usesCfgDebit = parsedRows.some(function(r){ return !isEdited(r, 'debit'); });
+  if (usesCfgDebit && !cfg.debitAc) {
+    add(v.global, 'error', 'debit', 'Debit A/C is empty — enter it in Payment Configuration');
+  } else if (usesCfgDebit && !/^\d+$/.test(cfg.debitAc)) {
+    add(v.global, 'warn', 'debit', 'Debit A/C "' + cfg.debitAc + '" contains characters other than digits');
+  }
+  if (parseISODate(cfg.payDateRaw) < today) {
+    add(v.global, 'error', 'date', 'Payment date ' + cfg.payDate + ' is in the past — the bank will reject it');
+  }
+  getCcList().forEach(function(e){
+    if (!isValidEmail(e)) add(v.global, 'error', 'cc', 'CC email "' + e + '" is not a valid address');
+  });
+
+  var seen = {};
+  parsedRows.forEach(function(r, i){
+    var e = effRow(r, cfg);
+
+    if (!e.name) rowAdd(i, 'name', 'error', 'Beneficiary name is empty');
+
+    if (!e.ifsc) rowAdd(i, 'ifsc', 'error', 'IFSC is empty');
+    else if (!IFSC_RE.test(e.ifsc)) rowAdd(i, 'ifsc', 'error', 'IFSC "' + e.ifsc + '" is not valid (11 characters, e.g. HDFC0001234)');
+
+    if (!e.accNo) rowAdd(i, 'accNo', 'error', 'Account number is empty');
+    else if (!/^\d+$/.test(e.accNo)) rowAdd(i, 'accNo', 'warn', 'Account number contains letters or symbols');
+    else if (e.accNo.length < 9 || e.accNo.length > 18) rowAdd(i, 'accNo', 'warn', 'Account number has ' + e.accNo.length + ' digits (usually 9–18)');
+
+    if (isNaN(e.amount)) rowAdd(i, 'amount', 'error', 'Amount is not a valid number');
+    else if (e.amount <= 0) rowAdd(i, 'amount', 'error', 'Amount must be more than 0');
+    else if (/\.\d{3,}/.test(String(cellValue(r, 'amount', cfg)))) rowAdd(i, 'amount', 'warn', 'Amount has more than 2 decimal places');
+
+    // Default date and debit are checked once above; only edited cells are checked per row
+    if (isEdited(r, 'date')) {
+      var d = parseDMY(e.date);
+      if (!d) rowAdd(i, 'date', 'error', 'Date "' + e.date + '" is not in DD/MM/YYYY format');
+      else if (d < today) rowAdd(i, 'date', 'error', 'Date ' + e.date + ' is in the past');
     }
-    ifscInput.classList.toggle('cell-edited',
-      ifscInput.value !== parsedRows[i].ifsc);
+    if (isEdited(r, 'debit')) {
+      if (!e.debit) rowAdd(i, 'debit', 'error', 'Debit A/C is empty');
+      else if (!/^\d+$/.test(e.debit)) rowAdd(i, 'debit', 'warn', 'Debit A/C contains characters other than digits');
+    }
+
+    e.emails.split(',').forEach(function(addr){
+      if (addr && !isValidEmail(addr)) rowAdd(i, 'emails', 'warn', 'Email "' + addr + '" looks invalid');
+    });
+
+    if (e.accNo && !isNaN(e.amount)) {
+      var key = e.accNo + '|' + e.amount.toFixed(2) + '|' + e.enr1.toUpperCase();
+      if (seen[key] !== undefined) {
+        rowAdd(i, 'dup', 'warn', 'Possible duplicate of row ' + (seen[key] + 1) + ' (same account, amount and invoice no)');
+      } else {
+        seen[key] = i;
+      }
+    }
+  });
+  return v;
+}
+
+// Colour problem cells and put the reason in their tooltip
+function applyValidation(v) {
+  var cfg = getConfig();
+  parsedRows.forEach(function(r, i){
+    var issues = v.rows[i] || [];
+    EDIT_FIELDS.forEach(function(f){
+      var el = document.getElementById('cel_' + f + i);
+      if (!el) return;
+      var mine = issues.filter(function(x){ return x.field === f; });
+      if (!isEdited(r, f)) mine = mine.concat(v.global.filter(function(x){ return x.field === f; }));
+      var lvl = mine.some(function(x){ return x.level === 'error'; }) ? 'error' : (mine.length ? 'warn' : '');
+      el.classList.toggle('cell-error', lvl === 'error');
+      el.classList.toggle('cell-warn',  lvl === 'warn');
+      el.title = mine.length ? mine.map(function(x){ return x.msg; }).join('\n')
+                             : (el.getAttribute('data-tip') || el.value);
+    });
+    var tr = document.getElementById('row' + i);
+    if (tr) tr.classList.toggle('row-dup', issues.some(function(x){ return x.field === 'dup'; }));
+    var badge = document.getElementById('mail' + i);
+    if (badge) {
+      var list = buildEmails(r, cfg.emails).split(',').filter(Boolean);
+      var bad  = issues.filter(function(x){ return x.field === 'emails'; });
+      badge.textContent = '✉ ' + list.length;
+      badge.classList.toggle('warn', bad.length > 0);
+      badge.title = 'Beneficiary emails (' + list.length + '):\n' + list.join('\n') +
+        (bad.length ? '\n\n' + bad.map(function(x){ return x.msg; }).join('\n') : '');
+    }
+  });
+}
+
+var GLOBAL_FOCUS = { debit: 'cfgDebitAc', date: 'cfgPayDate', cc: 'ccAddInput' };
+
+function renderIssues(v) {
+  var panel = document.getElementById('issuesPanel');
+  var list  = document.getElementById('issuesList');
+  var title = document.getElementById('issuesTitle');
+  if (!parsedRows.length || currentMode !== 'erp') { panel.classList.remove('visible'); return; }
+  panel.classList.add('visible');
+  panel.classList.toggle('ok', !v.errors && !v.warnings);
+  panel.classList.toggle('warn-only', !v.errors && v.warnings > 0);
+  if (!v.errors && !v.warnings) {
+    title.textContent = '✓ All checks passed — ' + plural(parsedRows.length, 'payment') + ' ready';
+    list.innerHTML = '';
+    return;
+  }
+  title.textContent = '⚠ Checks before download — ' + plural(v.errors, 'error') + ', ' + plural(v.warnings, 'warning');
+  var cfg  = getConfig();
+  var html = v.global.map(function(g){
+    return '<div class="issue-row" data-focus="' + (GLOBAL_FOCUS[g.field] || '') + '">' +
+      '<span class="row-num lvl-' + g.level + '">' + (g.level === 'error' ? 'Error' : 'Warning') + '</span>' +
+      '<span>' + esc(g.msg) + '</span></div>';
+  });
+  Object.keys(v.rows).forEach(function(i){
+    var issues = v.rows[i];
+    var lvl    = issues.some(function(x){ return x.level === 'error'; }) ? 'error' : 'warn';
+    var field  = issues[0].field;
+    if (EDIT_FIELDS.indexOf(field) < 0) field = 'name';
+    html.push('<div class="issue-row" data-row="' + i + '" data-field="' + field + '">' +
+      '<span class="row-num lvl-' + lvl + '">Row ' + (+i + 1) + '</span>' +
+      '<span>' + esc(effRow(parsedRows[i], cfg).name || '(no name)') + ' — ' +
+      esc(issues.map(function(x){ return x.msg; }).join('; ')) + '</span></div>');
+  });
+  list.innerHTML = html.join('');
+}
+
+// Click an issue to jump to the cell or setting that needs fixing
+document.getElementById('issuesList').addEventListener('click', function(e){
+  var item = e.target.closest('.issue-row');
+  if (!item) return;
+  var id = item.getAttribute('data-focus') ||
+    ('cel_' + item.getAttribute('data-field') + item.getAttribute('data-row'));
+  var el = document.getElementById(id);
+  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus({ preventScroll: true }); }
+});
+
+function updateDownloadState(v) {
+  var hint    = document.getElementById('downloadHint');
+  var blocked = currentMode === 'erp' && !!v && v.errors > 0;
+  ['btnXls','btnTxt','btnBoth'].forEach(function(id){
+    document.getElementById(id).disabled = blocked;
+  });
+  if (blocked) {
+    hint.className   = 'download-hint error';
+    hint.textContent = 'Fix ' + plural(v.errors, 'error') + ' listed above to enable download';
+  } else if (currentMode === 'erp' && v && v.warnings) {
+    hint.className   = 'download-hint warn';
+    hint.textContent = plural(v.warnings, 'warning') + ' — review them before downloading';
+  } else {
+    hint.className   = 'download-hint';
+    hint.textContent = '';
   }
 }
 
+// ─── Table ───────────────────────────────────────────────────────────────────
+function onPmtTypeChange(sel) {
+  var r = parsedRows[parseInt(sel.getAttribute('data-row'))];
+  if (sel.value === r.pmtType) delete r._pmtType; else r._pmtType = sel.value;
+  renderPreview();   // IFSC switches to/from the Kotak IFSC
+}
+
 function onCellEdit(el) {
-  var i     = parseInt(el.getAttribute('data-row'));
-  var field = el.getAttribute('data-field');
-  var key   = '_' + field;
-  parsedRows[i][key] = el.value;
-  // Flag manual debit edits so config changes don't override them
-  if (field === 'debit') parsedRows[i]._debit_manual = true;
-  el.classList.add('cell-edited');
-  document.getElementById('editBadge').classList.add('visible');
+  var r = parsedRows[parseInt(el.getAttribute('data-row'))];
+  var f = el.getAttribute('data-field');
+  if (el.value === defaultValue(r, f, getConfig())) delete r['_' + f];
+  else r['_' + f] = el.value;
+  el.classList.toggle('cell-edited', isEdited(r, f));
+  refreshDerived();
 }
 
 function renderPreview() {
   var cfg   = getConfig();
   var tbody = document.getElementById('previewBody');
-  tbody.innerHTML = parsedRows.map(function(r, i){
-    var payDate  = r._date  || cfg.payDate;
-    var suppName = r._name  || sanitize(cleanVendor(r.supplier));
-    var enr1     = r._enr1  || getEnr1(r);
-    var enr2     = r._enr2  || sanitize(r.purpose);
-    var rowPmt   = r._pmtType || r.pmtType || cfg.paymentType;
-  var ifsc     = (rowPmt === 'IFT') ? KOTAK_IFSC : (r._ifsc || r.ifsc);
-    var accNo    = r._accNo || r.accNo;
-    var amount   = r._amount|| r.amount;
-    var debit    = r._debit !== undefined ? r._debit : cfg.debitAc;
+  var thead = document.querySelector('#previewPanel thead tr');
+  if (thead.innerHTML !== ERP_THEAD) thead.innerHTML = ERP_THEAD;
 
-    function inp(id, val, cls, title) {
-      var field = id.replace('cel_','');
-      return '<input id="' + id + i + '" class="cell-input ' + (cls||'') + '" ' +
-        'value="' + esc(val) + '" ' +
-        (title ? 'title="' + esc(title) + '" ' : '') +
-        'data-row="' + i + '" data-field="' + field + '" ' +
-        'oninput="onCellEdit(this)"' +
-        '>';
+  if (!parsedRows.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:18px;text-align:center;color:var(--text3);white-space:normal;">' +
+      'No payment rows. Upload a file, or use Undo remove.</td></tr>';
+    refreshDerived();
+    return;
+  }
+
+  tbody.innerHTML = parsedRows.map(function(r, i){
+    var pmt = rowPmtType(r);
+    var ift = pmt === 'IFT';
+
+    function inp(f, cls, extra) {
+      var val = (f === 'ifsc' && ift) ? KOTAK_IFSC : cellValue(r, f, cfg);
+      return '<input id="cel_' + f + i + '" class="cell-input ' + (cls || '') +
+        (isEdited(r, f) ? ' cell-edited' : '') + '" ' +
+        'value="' + esc(val) + '" data-row="' + i + '" data-field="' + f + '" ' +
+        'aria-label="Row ' + (i + 1) + ' ' + f + '" oninput="onCellEdit(this)"' + (extra || '') + '>';
     }
 
-    // Per-row payment type: use row override, else auto-detected value
-    var rowPmtType = r._pmtType || r.pmtType || 'NEFT';
-    // If row is IFT, IFSC must be Kotak; if NEFT, use original
-    var effIfsc  = (rowPmtType === 'IFT') ? KOTAK_IFSC : ifsc;
-    var effDebit = r._debit_manual ? r._debit : cfg.debitAc;
-
-    // Payment type select dropdown (per row)
     var pmtSel = '<select id="cel_pmtType' + i + '" ' +
-      'class="cell-select pmt-' + rowPmtType.toLowerCase() + '" ' +
-      'data-row="' + i + '" data-field="pmtType" ' +
+      'class="cell-select pmt-' + pmt.toLowerCase() + (r._pmtType ? ' cell-edited' : '') + '" ' +
+      'data-row="' + i + '" data-field="pmtType" aria-label="Row ' + (i + 1) + ' payment type" ' +
       'onchange="onPmtTypeChange(this)">' +
-      '<option value="NEFT"' + (rowPmtType==='NEFT'?' selected':'') + '>NEFT</option>' +
-      '<option value="IFT"'  + (rowPmtType==='IFT' ?' selected':'') + '>IFT</option>' +
+      '<option value="NEFT"' + (pmt === 'NEFT' ? ' selected' : '') + '>NEFT</option>' +
+      '<option value="IFT"'  + (ift ? ' selected' : '') + '>IFT</option>' +
       '</select>';
 
-    return '<tr>' +
-      '<td style="padding:10px 14px;color:var(--text2);min-width:30px;">' + (i+1) +
+    var iftTip = ift ? ' readonly data-tip="IFT payments always use the Kotak IFSC ' + KOTAK_IFSC + '. Switch the row to NEFT to edit."' : '';
+
+    return '<tr id="row' + i + '">' +
+      '<td style="padding:10px 14px;color:var(--text2);min-width:30px;">' + (i + 1) +
         (r.source === 'expense' ? ' <span class="src-badge src-expense">EXP</span>' :
          r.source === 'vendor'  ? ' <span class="src-badge src-vendor">VEN</span>' : '') +
+        '<span class="mail-badge" id="mail' + i + '"></span>' +
       '</td>' +
-      '<td style="min-width:80px;">' + pmtSel + '</td>' +
-      '<td style="min-width:180px;">' + inp('cel_name',   suppName, '') + '</td>' +
-      '<td style="min-width:110px;">' + inp('cel_ifsc',   effIfsc,  'cell-muted') + '</td>' +
-      '<td style="min-width:130px;">' + inp('cel_accNo',  accNo,    'cell-muted') + '</td>' +
-      '<td style="min-width:100px;">' + inp('cel_amount', amount,   'cell-amount') + '</td>' +
-      '<td style="min-width:100px;">' + inp('cel_date',   payDate,  'cell-muted') + '</td>' +
-      '<td style="min-width:110px;">' + inp('cel_debit',  effDebit, 'cell-muted') + '</td>' +
-      '<td style="min-width:140px;">' + inp('cel_enr1',   enr1,     'cell-muted', enr1) + '</td>' +
-      '<td style="min-width:240px;">' + inp('cel_enr2',   enr2,     'cell-muted', enr2) + '</td>' +
+      '<td style="min-width:80px;">'  + pmtSel + '</td>' +
+      '<td style="min-width:180px;">' + inp('name',   '') + '</td>' +
+      '<td style="min-width:110px;">' + inp('ifsc',   'cell-muted', iftTip) + '</td>' +
+      '<td style="min-width:130px;">' + inp('accNo',  'cell-muted', ' inputmode="numeric"') + '</td>' +
+      '<td style="min-width:100px;">' + inp('amount', 'cell-amount', ' inputmode="decimal"') + '</td>' +
+      '<td style="min-width:100px;">' + inp('date',   'cell-muted') + '</td>' +
+      '<td style="min-width:110px;">' + inp('debit',  'cell-muted', ' inputmode="numeric"') + '</td>' +
+      '<td style="min-width:140px;">' + inp('enr1',   'cell-muted') + '</td>' +
+      '<td style="min-width:240px;">' + inp('enr2',   'cell-muted') + '</td>' +
+      '<td><button type="button" class="row-del" title="Remove this payment" aria-label="Remove row ' + (i + 1) + '" onclick="deleteRow(' + i + ')">✕</button></td>' +
       '</tr>';
   }).join('');
 
-  document.getElementById('rowCount').textContent = parsedRows.length + ' rows';
+  refreshDerived();
+}
 
-  var lines = buildTxtLines();
+// Re-run checks and redraw everything that depends on row values, without
+// rebuilding the table (so typing in a cell keeps its focus)
+function refreshDerived() {
+  var v = validateAll();
+  applyValidation(v);
+  renderIssues(v);
+  renderSummary();
+  renderStats();
+  renderEmailTemplate();
+  renderTxtPreview();
+  updateDownloadState(v);
+  document.getElementById('rowCount').textContent = plural(parsedRows.length, 'row');
+  document.getElementById('editBadge').classList.toggle('visible', hasEdits());
+  return v;
+}
+
+function renderTxtPreview() {
+  var box = document.getElementById('txtPreview');
+  if (!parsedRows.length) { box.classList.remove('visible'); return; }
+  var lines   = buildTxtLines();
   var preview = lines.slice(0,3).join('\n');
-  if (lines.length > 3) preview += '\n\u2026 (' + (lines.length-3) + ' more rows)';
-  document.getElementById('txtPreview').textContent = preview;
-  document.getElementById('txtPreview').classList.add('visible');
+  if (lines.length > 3) preview += '\n… (' + (lines.length-3) + ' more rows)';
+  box.textContent = preview;
+  box.classList.add('visible');
+}
+
+var lastRemoved = null;
+
+function deleteRow(i) {
+  lastRemoved = { row: parsedRows[i], index: i };
+  parsedRows.splice(i, 1);
+  document.getElementById('undoDeleteBtn').style.display = '';
+  renderPreview();
+  showToast('Removed row ' + (i + 1) + ' — Undo remove brings it back');
+}
+
+document.getElementById('undoDeleteBtn').addEventListener('click', function(){
+  if (!lastRemoved) return;
+  parsedRows.splice(Math.min(lastRemoved.index, parsedRows.length), 0, lastRemoved.row);
+  lastRemoved = null;
+  this.style.display = 'none';
+  renderPreview();
+  showToast('Row restored');
+});
+
+function clearUndo() {
+  lastRemoved = null;
+  document.getElementById('undoDeleteBtn').style.display = 'none';
+}
+
+function totalAmount() {
+  var cfg = getConfig();
+  return parsedRows.reduce(function(s, r){ return s + safeAmount(effRow(r, cfg)); }, 0);
 }
 
 function renderSummary() {
-  var totalAmt = parsedRows.reduce(function(s,r){ return s+r.amount; }, 0);
   var totalTds = parsedRows.reduce(function(s,r){ return s+(r.tdsAmt||0); }, 0);
   var tdsRows  = parsedRows.filter(function(r){ return r.tdsAmt>0; }).length;
   document.getElementById('sumRows').textContent    = parsedRows.length;
-  document.getElementById('sumAmount').textContent  = fmtAmt(totalAmt);
+  document.getElementById('sumAmount').textContent  = fmtAmt(totalAmount());
   document.getElementById('sumTds2').textContent    = fmtAmt(totalTds);
   document.getElementById('sumTdsRows').textContent = tdsRows;
   document.getElementById('summaryBar').classList.add('visible');
@@ -1676,50 +2230,71 @@ function renderSummary() {
 function renderStats() {
   var vendorCount  = parsedRows.filter(function(r){ return r.source === 'vendor'; }).length;
   var expenseCount = parsedRows.filter(function(r){ return r.source === 'expense'; }).length;
-  var totalAmt     = parsedRows.reduce(function(s,r){ return s + r.amount; }, 0);
 
   document.getElementById('statFiles').textContent   = loadedFiles.length;
   document.getElementById('statVendor').textContent  = vendorCount;
   document.getElementById('statExpense').textContent = expenseCount;
   document.getElementById('statTotal').textContent   = parsedRows.length;
-  document.getElementById('statAmount').textContent  = fmtAmt(totalAmt);
+  document.getElementById('statAmount').textContent  = fmtAmt(totalAmount());
   document.getElementById('statsPanel').classList.add('visible');
 }
 
-function showUI() {
+function showUI(msg) {
   ['configPanel','previewPanel','actions','mappingSection'].forEach(function(id){
     document.getElementById(id).classList.add('visible');
   });
   checkDateAlert();
-  renderEmailTemplate();
-  renderStats();
-  showToast('Loaded ' + parsedRows.length + ' payment rows');
+  renderPreview();
+  showToast(msg || ('Loaded ' + parsedRows.length + ' payment rows'));
 }
 
 // ─── Email Template ──────────────────────────────────────────────────────────
-function renderEmailTemplate() {
-  var panel = document.getElementById('emailTemplatePanel');
-  if (!parsedRows.length) { panel.classList.remove('visible'); return; }
+function fmtINR(n) {
+  return new Intl.NumberFormat('en-IN').format(n);
+}
 
-  var cfg      = getConfig();
-  var fundType = cfg.fundType;
+function emailData() {
+  var cfg  = getConfig();
+  var d    = parseISODate(cfg.payDateRaw);
+  var rows = parsedRows.map(function(r){
+    return {
+      name:       emailName(r),
+      amount:     safeAmount(effRow(r, cfg)),
+      project:    extractProject(r.costCenter),
+      purpose:    sanitize(cleanPurpose(r.purpose)),
+      purposeRaw: cleanPurpose(r.purpose),
+    };
+  });
+  var total    = rows.reduce(function(s, x){ return s + x.amount; }, 0);
   var letterNo = cfg.letterNo.padStart(2,'0');
-  var d        = new Date(cfg.payDateRaw);
   var payDisp  = String(d.getDate()).padStart(2,'0') + '-' +
                  String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear();
-  var total    = parsedRows.reduce(function(s,r){ return s+r.amount; }, 0);
-  var totalFmt = new Intl.NumberFormat('en-IN').format(total);
+  return {
+    fundType: cfg.fundType,
+    letterNo: letterNo,
+    payDisp:  payDisp,
+    rows:     rows,
+    total:    total,
+    totalFmt: fmtINR(total),
+    subject:  'Payment Letter ' + cfg.fundType + ' No ' + letterNo + ' Date ' + payDisp + ' Rs ' + fmtINR(total) + '/-',
+    to:       document.getElementById('emailTo').value.trim(),
+    sign:     document.getElementById('emailSign').value.trim(),
+  };
+}
 
-  var subject = 'Payment Letter ' + fundType + ' No ' + letterNo +
-                ' Date ' + payDisp + ' Rs ' + totalFmt + '/-';
-  document.getElementById('emailSubject').textContent = subject;
+function renderEmailTemplate() {
+  var panel = document.getElementById('emailTemplatePanel');
+  if (!parsedRows.length || currentMode !== 'erp') { panel.classList.remove('visible'); return; }
 
-  // ── HTML table for on-screen preview ──────────────────────────────────────
+  var m = emailData();
+  document.getElementById('emailSubject').textContent   = m.subject;
+  document.getElementById('emailToPreview').textContent = m.to || '—';
+
   var tblStyle = 'width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin:10px 0;';
   var thStyle  = 'padding:8px 12px;background:var(--surface2);border:1px solid var(--border);text-align:left;font-size:10px;letter-spacing:0.08em;color:var(--text2);';
   var tdStyle  = 'padding:7px 12px;border:1px solid var(--border);vertical-align:top;color:var(--text);';
   var tdAmtStyle = 'padding:7px 12px;border:1px solid var(--border);text-align:right;color:var(--accent2);font-weight:600;white-space:nowrap;';
-  var tdTotStyle = 'padding:8px 12px;border:1px solid var(--border);text-align:right;color:var(--accent);font-weight:600;background:var(--surface2);';
+  var tdTotStyle = 'padding:8px 12px;border:1px solid var(--border);text-align:right;color:var(--accent-strong);font-weight:600;background:var(--surface2);';
 
   var headerRow = '<tr>' +
     '<th style="' + thStyle + 'width:30px;">#</th>' +
@@ -1729,193 +2304,110 @@ function renderEmailTemplate() {
     '<th style="' + thStyle + '">Purpose</th>' +
     '</tr>';
 
-  var dataRows = parsedRows.map(function(r, i){
-    var name    = cleanVendor(r.supplier);
-    var purpose = sanitize(cleanPurpose(r.purpose));
-    var project = extractProject(r.costCenter);
-    var amt     = new Intl.NumberFormat('en-IN').format(r.amount);
+  var dataRows = m.rows.map(function(x, i){
     return '<tr>' +
       '<td style="' + tdStyle + 'color:var(--text2);">' + (i+1) + '</td>' +
-      '<td style="' + tdStyle + '">' + name + '</td>' +
-      '<td style="' + tdAmtStyle + '">' + amt + '</td>' +
-      '<td style="' + tdStyle + 'color:var(--text2);">' + project + '</td>' +
-      '<td style="' + tdStyle + 'color:var(--text2);">' + purpose + '</td>' +
+      '<td style="' + tdStyle + '">' + esc(x.name) + '</td>' +
+      '<td style="' + tdAmtStyle + '">' + fmtINR(x.amount) + '</td>' +
+      '<td style="' + tdStyle + 'color:var(--text2);">' + esc(x.project) + '</td>' +
+      '<td style="' + tdStyle + 'color:var(--text2);">' + esc(x.purpose) + '</td>' +
       '</tr>';
   }).join('');
 
   var totalRow = '<tr>' +
     '<td colspan="2" style="' + tdTotStyle + 'text-align:left;font-weight:600;">TOTAL</td>' +
-    '<td style="' + tdTotStyle + '">' + totalFmt + '</td>' +
+    '<td style="' + tdTotStyle + '">' + m.totalFmt + '</td>' +
     '<td colspan="2" style="' + tdTotStyle + '"></td>' +
     '</tr>';
 
-  var tableHtml = '<table style="' + tblStyle + '">' + headerRow + dataRows + totalRow + '</table>';
-
-  var bodyHtml =
+  document.getElementById('emailBody').innerHTML =
     '<div style="font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--text);">' +
     '<p>Dear Sir,</p><br>' +
-    '<p>Please approve below <strong>' + fundType + '</strong> payments</p>' +
-    '<p><strong>' + fundType + ' Letter No ' + letterNo + '</strong></p><br>' +
-    tableHtml +
-    '<br><p>Thanks &amp; Regards,<br>Vipin Nair</p>' +
+    '<p>Please approve below <strong>' + esc(m.fundType) + '</strong> payments</p>' +
+    '<p><strong>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</strong></p><br>' +
+    '<table style="' + tblStyle + '">' + headerRow + dataRows + totalRow + '</table>' +
+    '<br><p>Thanks &amp; Regards,<br>' + esc(m.sign) + '</p>' +
     '</div>';
-
-  document.getElementById('emailBody').innerHTML = bodyHtml;
   panel.classList.add('visible');
-
-  // ── Plain-text copy (tab-separated table, pastes well into Outlook/Gmail) ─
-  document.getElementById('btnCopyEmail').onclick = function(){
-    var lines = [];
-    lines.push('Subject: ' + subject);
-    lines.push('');
-    lines.push('Dear Sir,');
-    lines.push('');
-    lines.push('Please approve below ' + fundType + ' payments');
-    lines.push(fundType + ' Letter No ' + letterNo);
-    lines.push('');
-    // Tab-separated header
-    lines.push('Vendor		Amount		Project		Purpose');
-    lines.push(Array(120).join('-'));
-    parsedRows.forEach(function(r, i){
-      var name    = cleanVendor(r.supplier);
-      var purpose = sanitize(cleanPurpose(r.purpose));
-      var project = extractProject(r.costCenter);
-      var amt     = 'Rs ' + new Intl.NumberFormat('en-IN').format(r.amount);
-      lines.push((i+1) + '. ' + name + '		' + amt + '		' + project + '		' + purpose);
-    });
-    lines.push(Array(120).join('-'));
-    lines.push('TOTAL		Rs ' + totalFmt + '/-');
-    lines.push('');
-    lines.push('Thanks & Regards,');
-    lines.push('Vipin Nair');
-    // org line removed from email copy
-
-    navigator.clipboard.writeText(lines.join('\n'))
-      .then(function(){ showToast('Email copied to clipboard'); });
-  };
-
-  // ── Download Email as Excel ─────────────────────────────────────────────
-  document.getElementById('btnEmailXls').onclick = function(){
-    var cfg2     = getConfig();
-    var fundType2 = cfg2.fundType;
-    var letterNo2 = cfg2.letterNo.padStart(2,'0');
-    var d2        = new Date(cfg2.payDateRaw);
-    var payDisp2  = String(d2.getDate()).padStart(2,'0') + '-' +
-                    String(d2.getMonth()+1).padStart(2,'0') + '-' + d2.getFullYear();
-    var total2    = parsedRows.reduce(function(s,r){ return s+r.amount; }, 0);
-    var totalFmt2 = new Intl.NumberFormat('en-IN').format(total2);
-    var subject2  = 'Payment Letter ' + fundType2 + ' No ' + letterNo2 +
-                    ' Date ' + payDisp2 + ' Rs ' + totalFmt2 + '/-';
-
-    // Build worksheet data
-    var wsData = [
-      [fundType2 + ' Letter No ' + letterNo2],
-      ['Date: ' + payDisp2],
-      [],
-      ['#', 'Vendor', 'Amount (Rs)', 'Project', 'Purpose']
-    ];
-
-    parsedRows.forEach(function(r, i){
-      wsData.push([
-        i + 1,
-        cleanVendor(r.supplier),
-        r.amount,
-        extractProject(r.costCenter),
-        cleanPurpose(r.purpose)
-      ]);
-    });
-
-    wsData.push([]);
-    wsData.push(['', 'TOTAL', total2, '', '']);
-
-    var ws2  = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Column widths
-    ws2['!cols'] = [
-      {wch:4}, {wch:40}, {wch:16}, {wch:20}, {wch:80}
-    ];
-
-    // Bold header row (row index 3 = 4th row)
-    var headerCells = ['A4','B4','C4','D4','E4'];
-    headerCells.forEach(function(addr){
-      if (ws2[addr]) ws2[addr].s = {font:{bold:true}, fill:{fgColor:{rgb:'DDEEFF'}}};
-    });
-
-    var wb2 = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb2, ws2, 'Payment Letter');
-
-    var xlsName = 'PaymentLetter_' + fundType2 + '_No' + letterNo2 + '_' + payDisp2.replace(/-/g,'') + '.xlsx';
-    XLSX.writeFile(wb2, xlsName);
-    showToast('Payment Letter Excel downloaded');
-  };
 }
 
-// ─── Build Kotak XLS Row (49 columns) ───────────────────────────────────────
-function buildKotakRow(r, cfg) {
-  readTableEdits();
-  var emails   = buildEmails(r, cfg.emails);
-  var suppName = sanitize(cleanVendor(r._name || r.supplier));
-  var enr1     = r._enr1 || getEnr1(r);
-  var enr2     = r._enr2 || sanitize(r.purpose);
-  var rowPmt   = r._pmtType || r.pmtType || cfg.paymentType;
-  var ifsc     = (rowPmt === 'IFT') ? KOTAK_IFSC : (r._ifsc || r.ifsc);
-  var accNo    = r._accNo || r.accNo;
-  var amount   = r._amount|| r.amount;
-  var debit    = r._debit_manual ? r._debit : cfg.debitAc;
-  var payDate  = r._date  || cfg.payDate;
+// Plain-text copy (tab-separated table, pastes well into Outlook/Gmail)
+function copyEmail() {
+  var m = emailData();
+  var lines = [];
+  lines.push('Subject: ' + m.subject);
+  lines.push('');
+  lines.push('Dear Sir,');
+  lines.push('');
+  lines.push('Please approve below ' + m.fundType + ' payments');
+  lines.push(m.fundType + ' Letter No ' + m.letterNo);
+  lines.push('');
+  lines.push('Vendor\t\tAmount\t\tProject\t\tPurpose');
+  lines.push(Array(120).join('-'));
+  m.rows.forEach(function(x, i){
+    lines.push((i+1) + '. ' + x.name + '\t\tRs ' + fmtINR(x.amount) + '\t\t' + x.project + '\t\t' + x.purpose);
+  });
+  lines.push(Array(120).join('-'));
+  lines.push('TOTAL\t\tRs ' + m.totalFmt + '/-');
+  lines.push('');
+  lines.push('Thanks & Regards,');
+  lines.push(m.sign);
 
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(function(){ showToast('Email copied to clipboard'); })
+    .catch(function(){ showToast('Could not copy — your browser blocked clipboard access', 'error'); });
+}
+
+function downloadEmailXls() {
+  var m = emailData();
+  var wsData = [
+    [m.fundType + ' Letter No ' + m.letterNo],
+    ['Date: ' + m.payDisp],
+    [],
+    ['#', 'Vendor', 'Amount (Rs)', 'Project', 'Purpose']
+  ];
+  m.rows.forEach(function(x, i){
+    wsData.push([i + 1, x.name, x.amount, x.project, x.purposeRaw]);
+  });
+  wsData.push([]);
+  wsData.push(['', 'TOTAL', m.total, '', '']);
+
+  var ws2 = XLSX.utils.aoa_to_sheet(wsData);
+  ws2['!cols'] = [ {wch:4}, {wch:40}, {wch:16}, {wch:20}, {wch:80} ];
+
+  var wb2 = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb2, ws2, 'Payment Letter');
+  XLSX.writeFile(wb2, 'PaymentLetter_' + m.fundType + '_No' + m.letterNo + '_' + m.payDisp.replace(/-/g,'') + '.xlsx');
+  showToast('Payment Letter Excel downloaded');
+}
+
+document.getElementById('btnCopyEmail').addEventListener('click', copyEmail);
+document.getElementById('btnEmailXls').addEventListener('click', downloadEmailXls);
+
+// ─── Build Kotak Row (49 columns, same for XLS and TXT) ──────────────────────
+function buildKotakRow(r, cfg) {
+  var e   = effRow(r, cfg);
   var row = new Array(49).fill('');
   row[0]  = cfg.clientCode;
   row[1]  = cfg.productCode;
-  row[2]  = rowPmt;
-  row[3]  = '';
-  row[4]  = payDate;
-  row[5]  = '';
-  row[6]  = debit;
-  row[7]  = amount;
+  row[2]  = e.pmtType;
+  row[4]  = e.date;
+  row[6]  = e.debit;
+  row[7]  = e.amount;
   row[8]  = cfg.bankCode;
-  row[9]  = '';
-  row[10] = suppName;
-  row[11] = '';
-  row[12] = ifsc;
-  row[13] = accNo;
-  row[21] = emails;
-  row[29] = enr1;
-  row[30] = enr2;
+  row[10] = e.name;
+  row[12] = e.ifsc;
+  row[13] = e.accNo;
+  row[21] = e.emails;
+  row[29] = e.enr1;
+  row[30] = e.enr2;
   return row;
 }
 
 // ─── Build TXT Lines (49 tilde-delimited fields) ─────────────────────────────
 function buildTxtLines() {
-  readTableEdits();
   var cfg = getConfig();
-  return parsedRows.map(function(r){
-    var emails   = buildEmails(r, cfg.emails);
-    var suppName = sanitize(cleanVendor(r._name || r.supplier));
-    var enr1     = r._enr1 || getEnr1(r);
-    var enr2     = r._enr2 || sanitize(r.purpose);
-    var rowPmt   = r._pmtType || r.pmtType || cfg.paymentType;
-  var ifsc     = (rowPmt === 'IFT') ? KOTAK_IFSC : (r._ifsc || r.ifsc);
-    var accNo    = r._accNo || r.accNo;
-    var amount   = r._amount|| r.amount;
-    var debit    = r._debit_manual ? r._debit : cfg.debitAc;
-    var payDate  = r._date  || cfg.payDate;
-    var fields   = new Array(49).fill('');
-    fields[0]  = cfg.clientCode;
-    fields[1]  = cfg.productCode;
-    fields[2]  = rowPmt;
-    fields[4]  = payDate;
-    fields[6]  = debit;
-    fields[7]  = amount;
-    fields[8]  = cfg.bankCode;
-    fields[10] = suppName;
-    fields[12] = ifsc;
-    fields[13] = accNo;
-    fields[21] = emails;
-    fields[29] = enr1;
-    fields[30] = enr2;
-    return fields.join('~');
-  });
+  return parsedRows.map(function(r){ return buildKotakRow(r, cfg).join('~'); });
 }
 
 // ─── Downloads ───────────────────────────────────────────────────────────────
@@ -1925,10 +2417,6 @@ function stamp() {
 }
 
 function downloadXls() {
-  if (currentMode === 'generic') {
-    showToast('Generic mode: use Download TXT for bank upload', 'error');
-    return;
-  }
   var cfg  = getConfig();
   var data = [KOTAK_HEADERS].concat(parsedRows.map(function(r){ return buildKotakRow(r, cfg); }));
   var ws   = XLSX.utils.aoa_to_sheet(data);
@@ -1958,15 +2446,100 @@ function downloadTxt() {
   showToast('Kotak TXT downloaded');
 }
 
-// ─── Event Listeners ─────────────────────────────────────────────────────────
-document.getElementById('btnXls').addEventListener('click', downloadXls);
-document.getElementById('btnTxt').addEventListener('click', downloadTxt);
-document.getElementById('btnBoth').addEventListener('click', function(){
-  downloadXls(); setTimeout(downloadTxt, 500);
+function doDownload(kind) {
+  if (kind === 'xls' || kind === 'both') downloadXls();
+  if (kind === 'txt') downloadTxt();
+  if (kind === 'both') setTimeout(downloadTxt, 500);
+}
+
+var pendingDownload = null;
+
+// ERP mode: run the checks, then show a summary to confirm before downloading
+function requestDownload(kind) {
+  if (currentMode === 'generic') {
+    if (kind === 'xls') { showToast('Generic mode: use Download TXT for bank upload', 'error'); return; }
+    downloadTxt();
+    return;
+  }
+  if (!parsedRows.length) { showToast('No payment rows to download', 'error'); return; }
+  var v = refreshDerived();
+  if (v.errors) {
+    showToast('Fix ' + plural(v.errors, 'error') + ' before downloading', 'error');
+    document.getElementById('issuesPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  openConfirm(kind, v);
+}
+
+function distinct(list) {
+  return list.filter(function(x, i){ return list.indexOf(x) === i; });
+}
+
+function openConfirm(kind, v) {
+  var cfg     = getConfig();
+  var effs    = parsedRows.map(function(r){ return effRow(r, cfg); });
+  var debits  = distinct(effs.map(function(e){ return e.debit; }));
+  var dates   = distinct(effs.map(function(e){ return e.date; }));
+  var neft    = effs.filter(function(e){ return e.pmtType === 'NEFT'; }).length;
+  var vendor  = parsedRows.filter(function(r){ return r.source === 'vendor'; }).length;
+  var total   = effs.reduce(function(s, e){ return s + safeAmount(e); }, 0);
+  var items = [
+    ['Fund type',     cfg.fundType],
+    ['Payments',      parsedRows.length + ' (' + vendor + ' vendor · ' + (parsedRows.length - vendor) + ' expense)'],
+    ['Total amount',  new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', minimumFractionDigits:2}).format(total)],
+    ['Debit A/C',     debits.length === 1 ? debits[0] : debits.length + ' different: ' + debits.join(', ')],
+    ['Payment date',  dates.length === 1 ? dates[0] : dates.length + ' different: ' + dates.join(', ')],
+    ['Payment types', neft + ' NEFT · ' + (effs.length - neft) + ' IFT'],
+    ['File',          { xls: 'Kotak XLS', txt: 'Kotak TXT', both: 'Kotak XLS + TXT' }[kind]],
+  ];
+  document.getElementById('confirmGrid').innerHTML = items.map(function(it){
+    return '<dt>' + esc(it[0]) + '</dt><dd>' + esc(it[1]) + '</dd>';
+  }).join('');
+
+  var warnBox = document.getElementById('confirmWarn');
+  if (v.warnings) {
+    var msgs = v.global.map(function(g){ return g.msg; });
+    Object.keys(v.rows).forEach(function(i){
+      v.rows[i].forEach(function(x){ msgs.push('Row ' + (+i + 1) + ': ' + x.msg); });
+    });
+    warnBox.innerHTML = '<strong>' + plural(v.warnings, 'warning') + ' — confirm you have reviewed:</strong><br>' +
+      msgs.map(esc).join('<br>');
+    warnBox.style.display = '';
+  } else {
+    warnBox.style.display = 'none';
+  }
+  document.getElementById('btnConfirmDownload').textContent = v.warnings ? 'Download anyway' : 'Confirm & Download';
+  pendingDownload = kind;
+  document.getElementById('confirmModal').classList.add('visible');
+  document.getElementById('btnConfirmDownload').focus();
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('visible');
+  pendingDownload = null;
+}
+
+document.getElementById('btnConfirmDownload').addEventListener('click', function(){
+  var kind = pendingDownload;
+  closeConfirm();
+  if (kind) doDownload(kind);
 });
+document.getElementById('btnCancelDownload').addEventListener('click', closeConfirm);
+document.getElementById('confirmModal').addEventListener('click', function(e){
+  if (e.target === this) closeConfirm();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && document.getElementById('confirmModal').classList.contains('visible')) closeConfirm();
+});
+
+// ─── Event Listeners ─────────────────────────────────────────────────────────
+document.getElementById('btnXls').addEventListener('click', function(){ requestDownload('xls'); });
+document.getElementById('btnTxt').addEventListener('click', function(){ requestDownload('txt'); });
+document.getElementById('btnBoth').addEventListener('click', function(){ requestDownload('both'); });
 
 function resetAll() {
   parsedRows = []; genericRows = []; loadedFiles = []; fileInput.value = '';
+  clearUndo();
   document.getElementById('filesLoaded').style.display = 'none';
   document.getElementById('filesLoaded').innerHTML = '';
   ['previewPanel','actions','summaryBar','issuesPanel','mappingSection','statsPanel',
@@ -1975,25 +2548,19 @@ function resetAll() {
   });
   document.getElementById('txtPreview').classList.remove('visible');
   document.getElementById('previewBody').innerHTML = '';
-  // Restore ERP table headers
-  var thead = document.querySelector('#previewPanel thead tr');
-  if (thead) {
-    thead.innerHTML = '<th>#</th><th>Pmt Type</th><th>Beneficiary Name</th><th>IFSC</th><th>Account No</th>' +
-      '<th>Net Payable</th><th>Pay Date</th><th>Debit A/C</th><th>Enr-1 (Inv No)</th><th>Enrichment-2 (Purpose)</th>';
-  }
+  document.getElementById('editBadge').classList.remove('visible');
+  document.querySelector('#previewPanel thead tr').innerHTML = ERP_THEAD;
+  updateDownloadState(null);
 }
 
 // Refresh: clear all manual cell edits, re-render with current config
 document.getElementById('refreshBtn').addEventListener('click', function(){
   parsedRows.forEach(function(r){
-    var keys = Object.keys(r);
-    keys.forEach(function(k){
+    Object.keys(r).forEach(function(k){
       if (k.charAt(0) === '_') delete r[k];
     });
   });
-  document.getElementById('editBadge').classList.remove('visible');
   renderPreview();
-  renderSummary();
   showToast('Rows refreshed from config');
 });
 
@@ -2002,21 +2569,163 @@ document.getElementById('resetBtn').addEventListener('click', function(){
   showToast('Reset — upload a new file', 'error');
 });
 
-['cfgPayDate','cfgDebitAc','cfgEmails','cfgClientCode',
- 'cfgPaymentType','cfgFilter','cfgLetterNo'].forEach(function(id){
-  var el = document.getElementById(id);
-  if (el) el.addEventListener('change', function(){
-    if (parsedRows.length) renderPreview();
-    if (id === 'cfgPayDate') checkDateAlert();
-    renderEmailTemplate();
+// ─── CC email chips ──────────────────────────────────────────────────────────
+// The list lives in the hidden #cfgEmails input as a comma-separated string.
+function getCcList() {
+  return document.getElementById('cfgEmails').value.split(',')
+    .map(function(s){ return s.trim(); }).filter(Boolean);
+}
+
+function setCcList(list) {
+  document.getElementById('cfgEmails').value = list.join(',');
+  renderCcChips();
+  saveSettings();
+  onConfigChange();
+}
+
+function addCcEmails(text) {
+  var list  = getCcList();
+  var lower = list.map(function(e){ return e.toLowerCase(); });
+  var added = 0;
+  String(text).split(/[\s,;]+/).forEach(function(e){
+    e = e.trim().toLowerCase();
+    if (e && lower.indexOf(e) < 0) { list.push(e); lower.push(e); added++; }
+  });
+  if (added) setCcList(list);
+}
+
+function removeCc(i) {
+  var list = getCcList();
+  list.splice(i, 1);
+  setCcList(list);
+}
+
+function renderCcChips() {
+  var box   = document.getElementById('ccChips');
+  var input = document.getElementById('ccAddInput');
+  Array.prototype.slice.call(box.querySelectorAll('.chip')).forEach(function(c){ c.remove(); });
+  var list = getCcList();
+  list.forEach(function(e, i){
+    var ok   = isValidEmail(e);
+    var chip = document.createElement('span');
+    chip.className = 'chip' + (ok ? '' : ' invalid');
+    chip.title     = ok ? e : e + ' is not a valid email address';
+    chip.appendChild(document.createTextNode(e));
+    var x = document.createElement('button');
+    x.type = 'button';
+    x.textContent = '×';
+    x.setAttribute('aria-label', 'Remove ' + e);
+    x.addEventListener('click', function(ev){ ev.stopPropagation(); removeCc(i); });
+    chip.appendChild(x);
+    box.insertBefore(chip, input);
+  });
+  document.getElementById('ccCount').textContent = '(' + list.length + ')';
+}
+
+var ccInput = document.getElementById('ccAddInput');
+document.getElementById('ccChips').addEventListener('click', function(){ ccInput.focus(); });
+ccInput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
+    e.preventDefault();
+    if (ccInput.value.trim()) { addCcEmails(ccInput.value); ccInput.value = ''; }
+  }
+});
+ccInput.addEventListener('blur', function(){
+  if (ccInput.value.trim()) { addCcEmails(ccInput.value); ccInput.value = ''; }
+});
+ccInput.addEventListener('paste', function(e){
+  var text = (e.clipboardData || window.clipboardData).getData('text');
+  if (/[\s,;]/.test(text.trim())) {
+    e.preventDefault();
+    addCcEmails(ccInput.value + ' ' + text);
+    ccInput.value = '';
+  }
+});
+
+// ─── Saved settings (this browser only) ──────────────────────────────────────
+var SETTINGS_KEY = 'kotakPayConverter.settings';
+var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign'];
+var DEFAULT_SETTINGS = {};
+SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
+
+function fundKey() {
+  return isFcra ? 'debit_FCRA' : 'debit_NonFCRA';
+}
+
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+
+function saveSettings() {
+  var s = loadSettings();
+  SAVED_FIELDS.forEach(function(id){ s[id] = document.getElementById(id).value; });
+  s[fundKey()] = document.getElementById('cfgDebitAc').value;
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
+}
+
+function savedDebit() {
+  var v = loadSettings()[fundKey()];
+  return typeof v === 'string' ? v : '';
+}
+
+function applySettings() {
+  var s = loadSettings();
+  SAVED_FIELDS.forEach(function(id){
+    if (typeof s[id] === 'string') document.getElementById(id).value = s[id];
+  });
+  renderCcChips();
+}
+
+document.getElementById('resetSettingsBtn').addEventListener('click', function(){
+  try { localStorage.removeItem(SETTINGS_KEY); } catch (e) {}
+  SAVED_FIELDS.forEach(function(id){ document.getElementById(id).value = DEFAULT_SETTINGS[id]; });
+  document.getElementById('cfgDebitAc').value = '';
+  renderCcChips();
+  onConfigChange();
+  showToast('Default settings restored');
+});
+
+// ─── Config changes ──────────────────────────────────────────────────────────
+function onConfigChange() {
+  checkDateAlert();
+  if (currentMode === 'erp' && parsedRows.length) renderPreview();
+}
+
+['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
+ 'cfgPayDate','cfgLetterNo','emailTo','emailSign'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', function(){
+    if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
+    if (id === 'cfgLetterNo' || id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
+    else onConfigChange();
   });
 });
 
-document.getElementById('cfgLetterNo').addEventListener('input', function(){
-  renderEmailTemplate();
-});
+// ─── Theme (MiyeeIndia Tech Labs: auto / light / dark) ───────────────────────
+var THEME_KEY = 'kotakPayConverter.theme';
+var THEMES    = ['auto', 'light', 'dark'];
+
+function currentTheme() {
+  try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) { return 'auto'; }
+}
+
+function applyTheme(t) {
+  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  else document.documentElement.removeAttribute('data-theme');
+  var btn = document.getElementById('themeBtn');
+  btn.textContent = { auto: '◐ Auto', light: '☀ Light', dark: '☾ Dark' }[t] || '◐ Auto';
+  btn.title = 'Colour theme: ' + t + ' — click to switch';
+}
+
+function cycleTheme() {
+  var next = THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length];
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  applyTheme(next);
+}
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+applyTheme(currentTheme());
+applySettings();
 document.getElementById('cfgPayDate').value = todayStr();
 setFcra(false);
 checkDateAlert();
