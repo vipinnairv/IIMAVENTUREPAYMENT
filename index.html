@@ -498,6 +498,17 @@
 
   /* Required marker & helper text */
   .req { color: var(--error); font-weight: 600; }
+  .gmail-steps {
+    margin-top: 14px; padding: 14px 18px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--pink-bg), var(--violet-bg));
+    border: 1px solid rgba(124,58,237,0.25); font-size: 13px; color: var(--text);
+  }
+  .gmail-steps-title { font-weight: 600; color: var(--violet); margin-bottom: 6px; }
+  .gmail-steps ol { padding-left: 20px; margin: 0 0 10px; line-height: 1.8; }
+  .gmail-steps kbd {
+    font-family: var(--mono); font-size: 11px; padding: 1px 6px; border-radius: 4px;
+    background: var(--surface); border: 1px solid var(--border2); box-shadow: 0 1px 0 var(--border2);
+  }
   input.field-invalid, input.field-invalid:focus { border-color: var(--error); box-shadow: 0 0 0 3px var(--error-bg); }
   .field-help { font-size: 11px; color: var(--text3); line-height: 1.5; }
   .settings-reset {
@@ -686,7 +697,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.2</div>
+    <div class="badge">v1.3</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -949,6 +960,13 @@
         <input type="text" id="gmailAccount" value="" placeholder="e.g. vipinn@iima.ac.in — leave blank to use your default Google account" autocomplete="off">
         <div class="field-help">Use this if you are signed in to more than one Google account. These fields are remembered in this browser.</div>
       </div>
+      <div class="field-group">
+        <label for="gmailSignOff">Sign-off in Gmail draft</label>
+        <select id="gmailSignOff">
+          <option value="none">None — Gmail adds my signature</option>
+          <option value="add">Add "Thanks &amp; Regards" + signature name</option>
+        </select>
+      </div>
     </div>
     <div class="email-preview-box">
       <div class="email-field-row">
@@ -966,6 +984,15 @@
       <button class="btn btn-primary" id="btnGmailDraft" style="font-size:12px;" title="Opens a Gmail draft with To, Cc and Subject filled in, and copies the formatted email so you can paste it">✉ Draft in Gmail</button>
       <button class="btn btn-outline" id="btnCopyEmail" style="font-size:12px;">⧉ Copy Email</button>
       <button class="btn btn-secondary" id="btnEmailXls" style="font-size:12px;">⬇ Download Email as Excel</button>
+    </div>
+    <div class="gmail-steps" id="gmailSteps" hidden>
+      <div class="gmail-steps-title">✓ Payment table copied — finish in Gmail:</div>
+      <ol>
+        <li>In the Gmail draft, <strong>triple-click</strong> the line that says <em>"Triple-click this line…"</em></li>
+        <li>Press <kbd>Ctrl</kbd> + <kbd>V</kbd> (<kbd>⌘</kbd> + <kbd>V</kbd> on Mac) — the full email with the table appears</li>
+        <li>Attach the Excel if needed, check the recipients, then send</li>
+      </ol>
+      <button class="btn btn-outline" id="btnRecopy" style="font-size:11px;padding:7px 14px;">⧉ Copy table again</button>
     </div>
   </div>
 
@@ -1100,7 +1127,9 @@
         <p>After uploading, an approval email is auto-generated with a table of all payments. Use it to get payment approval from management.</p>
         <ul>
           <li><strong>To</strong> and <strong>Signature name</strong> are editable at the top of the panel and are remembered.</li>
-          <li><strong>&#x2709; Draft in Gmail</strong> — opens a new Gmail draft with the To and Cc addresses and the subject filled in, and copies the formatted email (with the payment table) to your clipboard. Click in the message body and press <strong>Ctrl+V</strong> (&#x2318;V on Mac) to paste it, attach the Excel if needed, then send. Gmail keeps it in Drafts until you send it.</li>
+          <li><strong>&#x2709; Draft in Gmail</strong> — opens a new Gmail draft with the To and Cc addresses and the subject filled in, and copies the formatted email (with the payment table) to your clipboard. Gmail cannot receive a table through a link, so you paste it: in the draft, <strong>triple-click</strong> the line "Triple-click this line…" and press <strong>Ctrl+V</strong> (&#x2318;V on Mac). The full email with the table replaces that line. Attach the Excel if needed, then send. Gmail keeps it in Drafts until you send it.</li>
+          <li>The steps also appear under the buttons, with <strong>Copy table again</strong> in case you copied something else in between.</li>
+          <li><strong>Sign-off in Gmail draft</strong> — leave on "None" if your Gmail already adds your signature (so it isn't repeated); choose "Add" otherwise.</li>
           <li>Fill <strong>Gmail draft: To</strong> (and optional <strong>Cc</strong>) once with the approvers' email addresses — they are remembered. If you are signed in to several Google accounts, put the one to send from in <strong>Gmail account</strong>.</li>
           <li>If the browser blocks the Gmail window, allow pop-ups for this page and click again.</li>
           <li><strong>Copy Email</strong> — copies subject + body to the clipboard. Paste into Outlook or Gmail.</li>
@@ -2301,7 +2330,7 @@ function renderEmailTemplate() {
 }
 
 // Plain-text email (tab-separated table, pastes well into Outlook/Gmail)
-function emailPlainText(m, withSubject) {
+function emailPlainText(m, withSubject, withSign) {
   var lines = [];
   if (withSubject) {
     lines.push('Subject: ' + m.subject);
@@ -2319,14 +2348,16 @@ function emailPlainText(m, withSubject) {
   });
   lines.push(Array(120).join('-'));
   lines.push('TOTAL\t\tRs ' + m.totalFmt + '/-');
-  lines.push('');
-  lines.push('Thanks & Regards,');
-  lines.push(m.sign);
+  if (withSign) {
+    lines.push('');
+    lines.push('Thanks & Regards,');
+    lines.push(m.sign);
+  }
   return lines.join('\n');
 }
 
 function copyEmail() {
-  navigator.clipboard.writeText(emailPlainText(emailData(), true))
+  navigator.clipboard.writeText(emailPlainText(emailData(), true, true))
     .then(function(){ showToast('Email copied to clipboard'); })
     .catch(function(){ showToast('Could not copy — your browser blocked clipboard access', 'error'); });
 }
@@ -2357,7 +2388,15 @@ function downloadEmailXls() {
 // ─── Draft in Gmail ──────────────────────────────────────────────────────────
 // Gmail's compose link only takes plain text, so the formatted email (with the
 // payment table) goes to the clipboard and the user pastes it into the draft.
-var GMAIL_URL_LIMIT = 7000;
+var GMAIL_URL_LIMIT  = 7000;
+// Placed in the draft body so it is obvious where the copied table goes;
+// triple-clicking selects the line and the paste replaces it
+var GMAIL_PASTE_HINT = '>>> Triple-click this line, then press Ctrl+V (Cmd+V on Mac) to paste the payment table <<<';
+
+// Gmail usually adds the user's own signature, so the sign-off is optional
+function gmailWithSign() {
+  return document.getElementById('gmailSignOff').value === 'add';
+}
 
 function splitEmails(text) {
   return String(text || '').split(/[\s,;]+/).map(function(e){ return e.trim(); }).filter(Boolean);
@@ -2365,7 +2404,7 @@ function splitEmails(text) {
 
 // Email HTML with fixed colours (the on-screen preview uses theme variables,
 // which mean nothing once pasted into Gmail)
-function emailHtmlForGmail(m) {
+function emailHtmlForGmail(m, withSign) {
   var font = 'font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a2e;';
   var cell = 'padding:6px 10px;border:1px solid #c9d1e0;vertical-align:top;';
   var head = cell + 'background:#eef2fa;font-weight:bold;text-align:left;';
@@ -2391,7 +2430,7 @@ function emailHtmlForGmail(m) {
       '<td style="' + head + 'text-align:right;white-space:nowrap;">' + m.totalFmt + '</td>' +
       '<td colspan="2" style="' + head + '"></td></tr>' +
     '</table>' +
-    '<p>Thanks &amp; Regards,<br>' + esc(m.sign) + '</p>' +
+    (withSign ? '<p>Thanks &amp; Regards,<br>' + esc(m.sign) + '</p>' : '<p></p>') +
     '</div>';
 }
 
@@ -2408,11 +2447,15 @@ function gmailComposeUrl(m, to, cc, body) {
 
 function copyEmailHtml(m) {
   if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) return Promise.reject();
-  var html = emailHtmlForGmail(m);
+  var html = emailHtmlForGmail(m, gmailWithSign());
   return navigator.clipboard.write([new ClipboardItem({
     'text/html':  new Blob([html], { type: 'text/html' }),
-    'text/plain': new Blob([emailPlainText(m, false)], { type: 'text/plain' }),
+    'text/plain': new Blob([emailPlainText(m, false, gmailWithSign())], { type: 'text/plain' }),
   })]);
+}
+
+function showGmailSteps(show) {
+  document.getElementById('gmailSteps').hidden = !show;
 }
 
 function draftInGmail() {
@@ -2432,26 +2475,38 @@ function draftInGmail() {
   }
 
   function open(url, msg) {
-    var w = window.open(url, '_blank', 'noopener');
-    if (w === null) showToast('Your browser blocked the Gmail window — allow pop-ups for this page', 'error');
-    else showToast(msg);
+    // No 'noopener' feature here: with it window.open always returns null, so a
+    // blocked pop-up could not be told apart. Detach the opener by hand instead.
+    var w = window.open(url, '_blank');
+    if (!w) { showToast('Your browser blocked the Gmail window — allow pop-ups for this page', 'error'); return; }
+    try { w.opener = null; } catch (e) {}
+    showToast(msg);
   }
 
   copyEmailHtml(m).then(function(){
-    open(gmailComposeUrl(m, to, cc, ''),
-      'Gmail draft opened — click in the message body and press Ctrl+V (\u2318V on Mac) to paste the email');
+    showGmailSteps(true);
+    open(gmailComposeUrl(m, to, cc, GMAIL_PASTE_HINT),
+      'Email copied — in the Gmail draft, triple-click the marked line and press Ctrl+V');
   }).catch(function(){
     // No rich clipboard: put the plain-text email in the draft itself if it fits
-    var url = gmailComposeUrl(m, to, cc, emailPlainText(m, false));
+    showGmailSteps(false);
+    var text = emailPlainText(m, false, gmailWithSign());
+    var url  = gmailComposeUrl(m, to, cc, text);
     if (url.length <= GMAIL_URL_LIMIT) {
       open(url, 'Gmail draft opened with the email filled in');
     } else {
-      navigator.clipboard.writeText(emailPlainText(m, false)).catch(function(){});
-      open(gmailComposeUrl(m, to, cc, ''),
+      navigator.clipboard.writeText(text).catch(function(){});
+      open(gmailComposeUrl(m, to, cc, GMAIL_PASTE_HINT),
         'Gmail draft opened — the email is too long for the link, paste it with Ctrl+V');
     }
   });
 }
+
+document.getElementById('btnRecopy').addEventListener('click', function(){
+  copyEmailHtml(emailData())
+    .then(function(){ showToast('Payment table copied — paste it into the Gmail draft with Ctrl+V'); })
+    .catch(function(){ showToast('Could not copy — your browser blocked clipboard access', 'error'); });
+});
 
 document.getElementById('btnGmailDraft').addEventListener('click', draftInGmail);
 document.getElementById('btnCopyEmail').addEventListener('click', copyEmail);
@@ -2718,7 +2773,7 @@ ccInput.addEventListener('paste', function(e){
 // ─── Saved settings (this browser only) ──────────────────────────────────────
 var SETTINGS_KEY = 'kotakPayConverter.settings';
 var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign',
-                    'gmailTo','gmailCc','gmailAccount'];
+                    'gmailTo','gmailCc','gmailAccount','gmailSignOff'];
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
@@ -2767,7 +2822,7 @@ function onConfigChange() {
 }
 
 ['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
- 'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount'].forEach(function(id){
+ 'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount','gmailSignOff'].forEach(function(id){
   document.getElementById(id).addEventListener('input', function(){
     if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
     if (id.indexOf('gmail') === 0) document.getElementById(id).classList.remove('field-invalid');
