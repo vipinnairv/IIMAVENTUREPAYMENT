@@ -5,127 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CjxyZWN0IHg9IjIiIHk9IjYiIHdpZHRoPSIyOCIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiMxYTFhMmUiLz4KPHJlY3QgeD0iMiIgeT0iNiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjUiIGZpbGw9IiMwMGIzODYiLz4KPHJlY3QgeD0iNSIgeT0iMTYiIHdpZHRoPSIxMCIgaGVpZ2h0PSIyIiByeD0iMSIgZmlsbD0iIzAwYjM4NiIgb3BhY2l0eT0iMC42Ii8+CjxyZWN0IHg9IjUiIHk9IjIwIiB3aWR0aD0iNiIgaGVpZ2h0PSIyIiByeD0iMSIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iMC4zIi8+CjxyZWN0IHg9IjIxIiB5PSIxOCIgd2lkdGg9IjYiIGhlaWdodD0iNCIgcng9IjEiIGZpbGw9IiMwMGIzODYiLz4KPC9zdmc+">
 <title>Kotak Pay Converter | by Vipin Nair</title>
-<script>
-  try { var t = localStorage.getItem('kotakPayConverter.theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* MiyeeIndia Tech Labs theme: dark-first navy, teal accent, amber secondary */
+  /* MiyeeIndia Tech Labs palette, light: teal primary, plus blue, violet, pink
+     and amber used to colour-code each section */
   :root {
-    --bg: #080C18;
-    --surface: #0D1424;
-    --surface2: #121C30;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.16);
-    --header-bg: #0D1424;
-    --accent: #17E8B8;
-    --accent-hover: #45F0C9;
-    --accent-strong: #17E8B8;
-    --accent-light: rgba(23,232,184,0.12);
-    --accent-ring: rgba(23,232,184,0.18);
-    --accent-border: rgba(23,232,184,0.35);
-    --on-accent: #04261D;
-    --accent2: #FBBF24;
-    --accent2-hover: #FCD34D;
-    --accent2-light: rgba(251,191,36,0.12);
-    --accent2-ring: rgba(251,191,36,0.25);
-    --on-accent2: #241700;
-    --accent3: #F472B6;
-    --blue: #60A5FA;
-    --blue-bg: rgba(96,165,250,0.14);
-    --amber-strong: #FBBF24;
-    --amber-bg: rgba(251,191,36,0.14);
-    --text: #E6EEFF;
-    --text2: #A9B6D3;
-    --text3: #7487AE;
-    --success: #17E8B8;
-    --warning: #FBBF24;
-    --error: #F87171;
-    --error-fg: #FCA5A5;
-    --error-bg: rgba(248,113,113,0.12);
-    --error-border: rgba(248,113,113,0.45);
-    --warn-fg: #FBBF24;
-    --warn-bg: rgba(251,191,36,0.10);
-    --warn-border: rgba(251,191,36,0.45);
-    --edit-bg: rgba(251,191,36,0.14);
-    --hover-tint: rgba(255,255,255,0.05);
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.25);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.35);
-    color-scheme: dark;
-    --mono: 'DM Mono', 'IBM Plex Mono', 'Consolas', monospace;
-    --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-    --display: 'Syne', 'Plus Jakarta Sans', sans-serif;
-  }
-  @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) {
-      --bg: #F2F5FF;
-      --surface: #FFFFFF;
-      --surface2: #EBF0FF;
-      --border: rgba(10,16,32,0.09);
-      --border2: rgba(10,16,32,0.18);
-      --header-bg: #0A1020;
-      --accent: #0AB893;
-      --accent-hover: #09A583;
-      --accent-strong: #067A62;
-      --accent-light: rgba(10,184,147,0.10);
-      --accent-ring: rgba(10,184,147,0.16);
-      --accent-border: rgba(10,184,147,0.35);
-      --on-accent: #04261D;
-      --accent2: #D97706;
-      --accent2-hover: #F59E0B;
-      --accent2-light: rgba(217,119,6,0.10);
-      --accent2-ring: rgba(217,119,6,0.22);
-      --on-accent2: #FFFFFF;
-      --accent3: #DB2777;
-      --blue: #2563EB;
-      --blue-bg: #E5EDFF;
-      --amber-strong: #B45309;
-      --amber-bg: #FEF3E2;
-      --text: #0A1020;
-      --text2: #3B4A68;
-      --text3: #5A6B8A;
-      --success: #0AB893;
-      --warning: #D97706;
-      --error: #DC2626;
-      --error-fg: #991B1B;
-      --error-bg: #FEF2F2;
-      --error-border: #FCA5A5;
-      --warn-fg: #92400E;
-      --warn-bg: #FFF8E6;
-      --warn-border: #F5C842;
-      --edit-bg: #FFFBE6;
-      --hover-tint: rgba(10,16,32,0.04);
-      --shadow: 0 1px 3px rgba(10,16,32,0.06), 0 4px 12px rgba(10,16,32,0.04);
-      --shadow-md: 0 2px 8px rgba(10,16,32,0.08), 0 8px 24px rgba(10,16,32,0.06);
-    color-scheme: light;
-    }
-  }
-  :root[data-theme="light"] {
-    --bg: #F2F5FF;
+    --bg: #F4F6FF;
     --surface: #FFFFFF;
-    --surface2: #EBF0FF;
-    --border: rgba(10,16,32,0.09);
-    --border2: rgba(10,16,32,0.18);
+    --surface2: #EEF2FF;
+    --border: rgba(30,41,90,0.10);
+    --border2: rgba(30,41,90,0.20);
     --header-bg: #0A1020;
     --accent: #0AB893;
     --accent-hover: #09A583;
     --accent-strong: #067A62;
     --accent-light: rgba(10,184,147,0.10);
-    --accent-ring: rgba(10,184,147,0.16);
-    --accent-border: rgba(10,184,147,0.35);
-    --on-accent: #04261D;
-    --accent2: #D97706;
-    --accent2-hover: #F59E0B;
-    --accent2-light: rgba(217,119,6,0.10);
-    --accent2-ring: rgba(217,119,6,0.22);
-    --on-accent2: #FFFFFF;
+    --accent-ring: rgba(10,184,147,0.18);
+    --accent-border: rgba(10,184,147,0.40);
+    --on-accent: #FFFFFF;
+    --accent2: #F59E0B;
+    --accent2-hover: #D97706;
+    --accent2-light: rgba(245,158,11,0.12);
+    --accent2-ring: rgba(245,158,11,0.25);
+    --on-accent2: #3B2300;
     --accent3: #DB2777;
     --blue: #2563EB;
     --blue-bg: #E5EDFF;
+    --violet: #7C3AED;
+    --violet-bg: #F1EAFF;
+    --pink: #DB2777;
+    --pink-bg: #FDE8F2;
     --amber-strong: #B45309;
     --amber-bg: #FEF3E2;
-    --text: #0A1020;
+    --teal-bg: #E3F8F2;
+    --rainbow: linear-gradient(90deg, #0AB893 0%, #2563EB 35%, #7C3AED 65%, #DB2777 85%, #F59E0B 100%);
+    --text: #0F172A;
     --text2: #3B4A68;
     --text3: #5A6B8A;
     --success: #0AB893;
@@ -138,52 +53,13 @@
     --warn-bg: #FFF8E6;
     --warn-border: #F5C842;
     --edit-bg: #FFFBE6;
-    --hover-tint: rgba(10,16,32,0.04);
-    --shadow: 0 1px 3px rgba(10,16,32,0.06), 0 4px 12px rgba(10,16,32,0.04);
-    --shadow-md: 0 2px 8px rgba(10,16,32,0.08), 0 8px 24px rgba(10,16,32,0.06);
+    --hover-tint: rgba(30,41,90,0.04);
+    --shadow: 0 1px 3px rgba(30,41,90,0.06), 0 4px 14px rgba(30,41,90,0.05);
+    --shadow-md: 0 2px 8px rgba(30,41,90,0.08), 0 10px 28px rgba(30,41,90,0.08);
+    --mono: 'DM Mono', 'IBM Plex Mono', 'Consolas', monospace;
+    --sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --display: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
     color-scheme: light;
-  }
-  :root[data-theme="dark"] {
-    --bg: #080C18;
-    --surface: #0D1424;
-    --surface2: #121C30;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.16);
-    --header-bg: #0D1424;
-    --accent: #17E8B8;
-    --accent-hover: #45F0C9;
-    --accent-strong: #17E8B8;
-    --accent-light: rgba(23,232,184,0.12);
-    --accent-ring: rgba(23,232,184,0.18);
-    --accent-border: rgba(23,232,184,0.35);
-    --on-accent: #04261D;
-    --accent2: #FBBF24;
-    --accent2-hover: #FCD34D;
-    --accent2-light: rgba(251,191,36,0.12);
-    --accent2-ring: rgba(251,191,36,0.25);
-    --on-accent2: #241700;
-    --accent3: #F472B6;
-    --blue: #60A5FA;
-    --blue-bg: rgba(96,165,250,0.14);
-    --amber-strong: #FBBF24;
-    --amber-bg: rgba(251,191,36,0.14);
-    --text: #E6EEFF;
-    --text2: #A9B6D3;
-    --text3: #7487AE;
-    --success: #17E8B8;
-    --warning: #FBBF24;
-    --error: #F87171;
-    --error-fg: #FCA5A5;
-    --error-bg: rgba(248,113,113,0.12);
-    --error-border: rgba(248,113,113,0.45);
-    --warn-fg: #FBBF24;
-    --warn-bg: rgba(251,191,36,0.10);
-    --warn-border: rgba(251,191,36,0.45);
-    --edit-bg: rgba(251,191,36,0.14);
-    --hover-tint: rgba(255,255,255,0.05);
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.25);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.35);
-    color-scheme: dark;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
@@ -203,9 +79,9 @@
     display: flex; align-items: center; flex-shrink: 0;
   }
   .logo-text { font-family: var(--display); font-size: 15px; font-weight: 700; color: #F4F7FF; letter-spacing: 0.02em; }
-  .logo-sub  { font-size: 11px; color: rgba(255,255,255,0.5); font-family: var(--mono); margin-top: 1px; }
+  .logo-sub  { font-size: 11px; color: rgba(255,255,255,0.5); font-family: var(--sans); margin-top: 1px; }
   .badge {
-    font-family: var(--mono); font-size: 10px; padding: 3px 10px;
+    font-family: var(--sans); font-size: 10px; padding: 3px 10px;
     border-radius: 20px; border: 1px solid var(--accent);
     color: var(--accent-strong); background: var(--accent-ring); letter-spacing: 0.08em;
   }
@@ -234,7 +110,7 @@
     display: flex; align-items: center; gap: 7px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 8px 14px;
-    font-family: var(--mono); font-size: 11px; color: var(--text2);
+    font-family: var(--sans); font-size: 11px; color: var(--text2);
     box-shadow: var(--shadow);
   }
   .flow-step .dot { width: 7px; height: 7px; border-radius: 50%; }
@@ -261,7 +137,7 @@
   .upload-sub   { color: var(--text2); font-size: 13px; margin-bottom: 16px; }
   .upload-formats { display: flex; gap: 8px; justify-content: center; }
   .fmt-tag {
-    font-family: var(--mono); font-size: 10px; padding: 3px 10px;
+    font-family: var(--sans); font-size: 10px; padding: 3px 10px;
     border-radius: 4px; background: var(--surface2);
     border: 1px solid var(--border); color: var(--text3);
   }
@@ -279,7 +155,7 @@
   }
   .config-panel.visible { display: block; }
   .config-title {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    font-family: var(--sans); font-size: 10px; letter-spacing: 0.15em;
     color: var(--text3); text-transform: uppercase; margin-bottom: 16px;
     display: flex; align-items: center; gap: 10px;
   }
@@ -287,10 +163,10 @@
   .config-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
   .field-group { display: flex; flex-direction: column; gap: 5px; }
   .field-group.full { grid-column: 1 / -1; }
-  label { font-size: 10px; font-family: var(--mono); color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+  label { font-size: 10px; font-family: var(--sans); color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
   input, select {
     background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 7px; color: var(--text); font-family: var(--mono);
+    border-radius: 7px; color: var(--text); font-family: var(--sans);
     font-size: 12px; padding: 9px 12px; outline: none;
     transition: border-color 0.18s, box-shadow 0.18s; width: 100%;
   }
@@ -301,15 +177,15 @@
   .summary-bar { display: none; grid-template-columns: repeat(4,1fr); gap: 14px; margin-top: 18px; }
   .summary-bar.visible { display: grid; }
   .sum-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; box-shadow: var(--shadow); }
-  .sum-label { font-family: var(--mono); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 7px; }
-  .sum-value { font-family: var(--mono); font-size: 20px; font-weight: 600; color: var(--text); }
+  .sum-label { font-family: var(--sans); font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 7px; }
+  .sum-value { font-variant-numeric: tabular-nums; font-family: var(--sans); font-size: 20px; font-weight: 600; color: var(--text); }
   .sum-value.accent { color: var(--accent-strong); }
 
   /* Issues */
   .issues-panel { background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 10px; padding: 14px 18px; margin-top: 14px; display: none; }
   .issues-panel.visible { display: block; }
-  .issues-title { font-family: var(--mono); font-size: 10px; color: var(--error); margin-bottom: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
-  .issue-row { font-family: var(--mono); font-size: 11px; color: var(--error-fg); margin-bottom: 3px; display: flex; gap: 10px; }
+  .issues-title { font-family: var(--sans); font-size: 10px; color: var(--error); margin-bottom: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .issue-row { font-family: var(--sans); font-size: 11px; color: var(--error-fg); margin-bottom: 3px; display: flex; gap: 10px; }
   .issue-row .row-num { color: var(--error); min-width: 44px; }
 
   /* Preview */
@@ -325,8 +201,8 @@
     background: var(--surface2);
   }
   .preview-header-left { display: flex; align-items: center; gap: 12px; }
-  .preview-title { font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; }
-  .count-badge { background: var(--accent-light); border: 1px solid var(--accent-border); color: var(--accent-strong); font-family: var(--mono); font-size: 10px; padding: 2px 10px; border-radius: 20px; }
+  .preview-title { font-family: var(--sans); font-size: 11px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; }
+  .count-badge { background: var(--accent-light); border: 1px solid var(--accent-border); color: var(--accent-strong); font-family: var(--sans); font-size: 10px; padding: 2px 10px; border-radius: 20px; }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
   th {
@@ -365,7 +241,7 @@
   td input.cell-input.cell-edited { background: var(--edit-bg); }
   tr:hover td input.cell-input:not(:focus) { background: var(--accent-light); }
   .edit-badge {
-    font-family: var(--mono); font-size: 9px; padding: 2px 7px;
+    font-family: var(--sans); font-size: 9px; padding: 2px 7px;
     border-radius: 10px; background: var(--warn-bg); color: var(--warn-fg);
     border: 1px solid var(--warn-border); display: none; margin-left: 8px; vertical-align: middle;
   }
@@ -390,7 +266,7 @@
   .actions.visible { display: flex; }
   .btn {
     padding: 11px 24px; border-radius: 9px; border: none;
-    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    font-family: var(--sans); font-size: 12px; font-weight: 600;
     cursor: pointer; transition: all 0.16s;
     display: flex; align-items: center; gap: 7px; letter-spacing: 0.04em;
   }
@@ -405,7 +281,7 @@
   .mapping-section { margin-top: 20px; display: none; }
   .mapping-section.visible { display: block; }
   .section-label {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em;
+    font-family: var(--sans); font-size: 9px; letter-spacing: 0.2em;
     color: var(--text3); text-transform: uppercase;
     display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
   }
@@ -414,7 +290,7 @@
   .map-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 7px; padding: 9px 13px; font-family: var(--mono);
+    border-radius: 7px; padding: 9px 13px; font-family: var(--sans);
     font-size: 11px; box-shadow: var(--shadow);
   }
   .map-from  { color: var(--text2); flex: 1; }
@@ -423,14 +299,14 @@
 
   .reset-btn {
     background: none; border: none; color: var(--text3);
-    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    font-family: var(--sans); font-size: 11px; cursor: pointer;
     display: flex; align-items: center; gap: 5px;
     padding: 4px 8px; border-radius: 6px; transition: all 0.15s;
   }
   .reset-btn:hover { color: var(--error); background: var(--error-bg); }
   .refresh-btn {
     background: var(--accent-light); border: 1px solid var(--accent-border);
-    color: var(--accent-strong); font-family: var(--mono); font-size: 11px;
+    color: var(--accent-strong); font-family: var(--sans); font-size: 11px;
     cursor: pointer; padding: 4px 10px; border-radius: 6px;
     transition: all 0.15s; display: flex; align-items: center; gap: 4px;
   }
@@ -440,7 +316,7 @@
     position: fixed; bottom: 26px; right: 26px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 10px; padding: 11px 17px;
-    font-family: var(--mono); font-size: 12px; color: var(--text);
+    font-family: var(--sans); font-size: 12px; color: var(--text);
     transform: translateY(80px); opacity: 0; transition: all 0.24s;
     z-index: 999; max-width: 340px; box-shadow: var(--shadow-md);
   }
@@ -474,7 +350,7 @@
 
   /* File source badge */
   .src-badge {
-    display: inline-block; font-family: var(--mono); font-size: 9px;
+    display: inline-block; font-family: var(--sans); font-size: 9px;
     padding: 1px 6px; border-radius: 4px; letter-spacing: 0.05em; vertical-align: middle; margin-left: 4px;
   }
   .src-vendor { background: var(--blue-bg); color: var(--blue); }
@@ -487,7 +363,7 @@
   .file-tag {
     display: flex; align-items: center; gap: 6px; background: var(--surface);
     border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px;
-    font-family: var(--mono); font-size: 11px; color: var(--text2);
+    font-family: var(--sans); font-size: 11px; color: var(--text2);
   }
   .file-tag .ft-icon { font-size: 12px; }
   .file-tag .ft-count { color: var(--accent-strong); font-weight: 600; }
@@ -495,11 +371,10 @@
   /* Help button & panel */
   .help-btn {
     background: transparent; border: 1px solid rgba(255,255,255,0.3);
-    color: rgba(255,255,255,0.8); font-family: var(--mono); font-size: 11px;
+    color: rgba(255,255,255,0.8); font-family: var(--sans); font-size: 11px;
     font-weight: 600; padding: 3px 12px; border-radius: 20px;
     cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
   }
-  .theme-btn { min-width: 74px; }
   .help-btn:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
   .help-overlay {
@@ -529,7 +404,7 @@
   .help-section { margin-bottom: 28px; }
   .help-section:last-child { margin-bottom: 0; }
   .help-section h3 {
-    font-family: var(--mono); font-size: 13px; color: var(--accent-strong);
+    font-family: var(--sans); font-size: 13px; color: var(--accent-strong);
     margin: 0 0 12px; letter-spacing: 0.06em;
     display: flex; align-items: center; gap: 8px;
   }
@@ -540,7 +415,7 @@
   .help-section ol, .help-section ul { padding-left: 20px; margin: 8px 0; }
   .help-section li { margin-bottom: 8px; }
   .help-tag {
-    display: inline-block; font-family: var(--mono); font-size: 10px;
+    display: inline-block; font-family: var(--sans); font-size: 10px;
     padding: 2px 8px; border-radius: 4px; vertical-align: middle;
   }
   .help-tag-blue { background: var(--blue-bg); color: var(--blue); }
@@ -551,18 +426,18 @@
     background: var(--surface2); border: 1px solid var(--border);
     border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
     padding: 10px 14px; font-size: 12px; color: var(--text2);
-    font-family: var(--mono); margin: 10px 0; line-height: 1.7;
+    font-family: var(--sans); margin: 10px 0; line-height: 1.7;
   }
   .help-grid {
     display: grid; grid-template-columns: 120px 1fr; gap: 4px 14px;
-    font-size: 12px; font-family: var(--mono); margin: 10px 0;
+    font-size: 12px; font-family: var(--sans); margin: 10px 0;
   }
   .help-grid dt { color: var(--text3); }
   .help-grid dd { color: var(--text); margin: 0; }
 
   /* Mode Selector */
   .mode-selector { margin-bottom: 20px; }
-  .mode-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .mode-label { font-family: var(--sans); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
   .mode-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .mode-opt {
     background: var(--surface); border: 2px solid var(--border2);
@@ -572,9 +447,9 @@
   .mode-opt:hover { border-color: var(--accent); background: var(--accent-light); }
   .mode-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px var(--accent-ring); }
   .mode-opt-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-  .mode-opt-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); }
+  .mode-opt-title { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); }
   .mode-opt-sub { font-size: 11px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
-  .mode-badge { display: inline-block; font-size: 9px; font-family: var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent-strong); border: 1px solid var(--accent-border); margin-left: 6px; vertical-align: middle; }
+  .mode-badge { display: inline-block; font-size: 9px; font-family: var(--sans); padding: 1px 6px; border-radius: 4px; background: var(--accent-light); color: var(--accent-strong); border: 1px solid var(--accent-border); margin-left: 6px; vertical-align: middle; }
 
   /* Generic mode panel */
   .generic-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px; margin-top: 18px; box-shadow: var(--shadow); display: none; }
@@ -582,7 +457,7 @@
 
   /* FCRA Selector */
   .fcra-selector { margin-top: 18px; }
-  .fcra-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .fcra-label { font-family: var(--sans); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
   .fcra-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .fcra-opt {
     background: var(--surface); border: 2px solid var(--border2);
@@ -592,14 +467,14 @@
   .fcra-opt:hover { border-color: var(--accent); background: var(--accent-light); }
   .fcra-opt.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px var(--accent-ring); }
   .fcra-opt-icon { font-size: 24px; flex-shrink: 0; }
-  .fcra-opt-title { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--text); }
+  .fcra-opt-title { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text); }
   .fcra-opt-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
 
   /* Date alert */
   .date-alert {
     background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 8px;
     padding: 10px 14px; margin-bottom: 16px; font-size: 12px;
-    font-family: var(--mono); color: var(--warn-fg); display: flex; align-items: center; gap: 8px;
+    font-family: var(--sans); color: var(--warn-fg); display: flex; align-items: center; gap: 8px;
   }
   .date-alert-icon { font-size: 14px; }
 
@@ -613,7 +488,7 @@
   .email-preview-box {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 10px; padding: 18px 20px; margin-top: 14px;
-    font-family: var(--mono); font-size: 12px;
+    font-family: var(--sans); font-size: 12px;
   }
   .email-field-row { display: flex; gap: 12px; margin-bottom: 8px; align-items: baseline; }
   .email-field-label { color: var(--text3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; min-width: 56px; }
@@ -623,9 +498,10 @@
 
   /* Required marker & helper text */
   .req { color: var(--error); font-weight: 600; }
+  input.field-invalid, input.field-invalid:focus { border-color: var(--error); box-shadow: 0 0 0 3px var(--error-bg); }
   .field-help { font-size: 11px; color: var(--text3); line-height: 1.5; }
   .settings-reset {
-    background: none; border: none; color: var(--text3); font-family: var(--mono);
+    background: none; border: none; color: var(--text3); font-family: var(--sans);
     font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 5px;
     text-transform: none; letter-spacing: 0.04em; flex-shrink: 0;
   }
@@ -640,7 +516,7 @@
   }
   .chip-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); background: var(--surface); }
   .chip {
-    display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 11px;
+    display: inline-flex; align-items: center; gap: 4px; font-family: var(--sans); font-size: 11px;
     background: var(--accent-light); color: var(--accent-strong); border: 1px solid var(--accent-border);
     border-radius: 14px; padding: 3px 4px 3px 10px;
   }
@@ -661,7 +537,7 @@
   td input.cell-input[readonly] { cursor: not-allowed; color: var(--text3); }
   tr.row-dup td:first-child { box-shadow: inset 3px 0 0 var(--warn-border); }
   .mail-badge {
-    display: inline-block; font-family: var(--mono); font-size: 9px; padding: 1px 5px;
+    display: inline-block; font-family: var(--sans); font-size: 9px; padding: 1px 5px;
     border-radius: 4px; background: var(--surface2); color: var(--text2);
     border: 1px solid var(--border); margin-left: 4px; cursor: help; vertical-align: middle;
   }
@@ -687,14 +563,14 @@
   .btn:disabled, .btn:disabled:hover {
     opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none;
   }
-  .download-hint { text-align: center; font-family: var(--mono); font-size: 11px; margin-top: 8px; min-height: 16px; }
+  .download-hint { text-align: center; font-family: var(--sans); font-size: 11px; margin-top: 8px; min-height: 16px; }
   .download-hint.error { color: var(--error); }
   .download-hint.warn  { color: var(--warn-fg); }
 
   /* Confirm modal */
   .confirm-modal { text-align: left; max-width: 480px; }
   .confirm-grid {
-    display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-family: var(--mono);
+    display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-family: var(--sans);
     font-size: 12px; margin: 14px 0; padding: 14px 16px; background: var(--surface2);
     border: 1px solid var(--border); border-radius: 10px;
   }
@@ -702,10 +578,89 @@
   .confirm-grid dd { color: var(--text); font-weight: 600; margin: 0; word-break: break-all; }
   .confirm-warn {
     background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 8px; padding: 10px 12px;
-    font-family: var(--mono); font-size: 11px; color: var(--warn-fg); margin-bottom: 14px;
+    font-family: var(--sans); font-size: 11px; color: var(--warn-fg); margin-bottom: 14px;
     max-height: 140px; overflow-y: auto; line-height: 1.6;
   }
   .confirm-modal .import-modal-btns { justify-content: flex-end; }
+
+
+  /* ── Colour coding ─────────────────────────────────────────────────────── */
+  body {
+    background:
+      radial-gradient(900px 420px at 8% -8%, rgba(10,184,147,0.16), transparent 60%),
+      radial-gradient(800px 420px at 95% -5%, rgba(124,58,237,0.14), transparent 60%),
+      radial-gradient(700px 380px at 50% 18%, rgba(37,99,235,0.08), transparent 70%),
+      var(--bg);
+    background-repeat: no-repeat;
+  }
+  header { border-top: none; }
+  header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--rainbow); }
+  .hero h1 span {
+    background: linear-gradient(90deg, #0AB893, #2563EB 55%, #7C3AED);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .flow-step:nth-child(1) { background: var(--blue-bg);   border-color: rgba(37,99,235,0.25);  color: #1E40AF; }
+  .flow-step:nth-child(3) { background: var(--teal-bg);   border-color: rgba(10,184,147,0.3);  color: #065F46; }
+  .flow-step:nth-child(5) { background: var(--amber-bg);  border-color: rgba(245,158,11,0.35); color: #92400E; }
+  .flow-step:nth-child(7) { background: var(--pink-bg);   border-color: rgba(219,39,119,0.25); color: #9D174D; }
+  .upload-zone { border-color: rgba(124,58,237,0.35); background: linear-gradient(135deg, #FFFFFF 0%, #F7F4FF 100%); }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--violet); background: var(--violet-bg); box-shadow: 0 0 0 4px rgba(124,58,237,0.10); }
+  .upload-icon { background: linear-gradient(135deg, var(--teal-bg), var(--violet-bg)); border-color: rgba(124,58,237,0.2); }
+  #optFcra:hover, #optFcra.selected { border-color: var(--violet); background: var(--violet-bg); box-shadow: 0 0 0 3px rgba(124,58,237,0.14); }
+  #modeGeneric:hover, #modeGeneric.selected { border-color: var(--blue); background: var(--blue-bg); box-shadow: 0 0 0 3px rgba(37,99,235,0.14); }
+
+  /* Panels: a coloured top stripe and heading per section */
+  .config-panel, .preview-panel, .email-template-panel, .stats-panel, .generic-panel { border-top: 3px solid var(--panel-c, var(--accent)); }
+  .config-panel        { --panel-c: #0AB893; }
+  .preview-panel       { --panel-c: #2563EB; }
+  .email-template-panel{ --panel-c: #7C3AED; }
+  .stats-panel         { --panel-c: #F59E0B; }
+  .generic-panel       { --panel-c: #2563EB; }
+  .config-panel > .config-title        { color: #067A62; }
+  .email-template-panel > .config-title{ color: var(--violet); }
+  .stats-panel > .config-title         { color: var(--amber-strong); }
+  .preview-header { background: linear-gradient(90deg, var(--blue-bg), var(--surface2)); }
+  .preview-title { color: #1E40AF; font-weight: 600; }
+  th { background: #F3F6FF; color: #3B56A6; }
+
+  /* Summary + stats cards: one colour each */
+  .sum-card { border-top: 3px solid var(--card-c, var(--accent)); }
+  .sum-card .sum-label { color: var(--card-c, var(--text3)); font-weight: 600; }
+  .summary-bar .sum-card:nth-child(1), #statsGrid .sum-card:nth-child(1) { --card-c: #2563EB; background: linear-gradient(180deg, #F5F8FF, #FFFFFF); }
+  .summary-bar .sum-card:nth-child(2), #statsGrid .sum-card:nth-child(2) { --card-c: #0AB893; background: linear-gradient(180deg, #F0FBF7, #FFFFFF); }
+  .summary-bar .sum-card:nth-child(3), #statsGrid .sum-card:nth-child(3) { --card-c: #D97706; background: linear-gradient(180deg, #FFF8EC, #FFFFFF); }
+  .summary-bar .sum-card:nth-child(4), #statsGrid .sum-card:nth-child(4) { --card-c: #7C3AED; background: linear-gradient(180deg, #F7F3FF, #FFFFFF); }
+  #statsGrid .sum-card:nth-child(5) { --card-c: #DB2777; background: linear-gradient(180deg, #FEF2F8, #FFFFFF); }
+  .sum-card .sum-value { color: var(--text); }
+  .summary-bar .sum-card:nth-child(2) .sum-value, #statsGrid .sum-card:nth-child(5) .sum-value { color: var(--card-c); }
+
+  /* Buttons */
+  .btn-primary { background: linear-gradient(135deg, #0AB893, #089E7E); color: #fff; }
+  .btn-primary:hover { background: linear-gradient(135deg, #09A583, #078A6E); }
+  .btn-secondary { background: linear-gradient(135deg, #2563EB, #1D4ED8); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+  .btn-secondary:hover { background: linear-gradient(135deg, #1D4ED8, #1E40AF); }
+  #btnBoth { border-color: rgba(124,58,237,0.4); color: var(--violet); }
+  #btnBoth:hover:not(:disabled) { background: var(--violet-bg); border-color: var(--violet); color: var(--violet); }
+  #btnGmailDraft { background: linear-gradient(135deg, #DB2777, #7C3AED); color: #fff; box-shadow: 0 2px 10px rgba(219,39,119,0.25); }
+  #btnGmailDraft:hover { box-shadow: 0 4px 16px rgba(219,39,119,0.35); transform: translateY(-1px); }
+  #btnEmailXls { background: linear-gradient(135deg, #F59E0B, #D97706); color: #3B2300; box-shadow: 0 2px 8px rgba(245,158,11,0.25); }
+  .count-badge { background: var(--blue-bg); border-color: rgba(37,99,235,0.25); color: #1E40AF; }
+  .chip { background: var(--teal-bg); }
+  .map-row { border-left: 3px solid var(--map-c, var(--accent)); }
+  .map-row:nth-child(4n+1) { --map-c: #0AB893; }
+  .map-row:nth-child(4n+2) { --map-c: #2563EB; }
+  .map-row:nth-child(4n+3) { --map-c: #7C3AED; }
+  .map-row:nth-child(4n+4) { --map-c: #DB2777; }
+  .map-to { color: var(--map-c); }
+
+  /* Help: each section heading gets the next colour */
+  .help-header { background: linear-gradient(90deg, var(--teal-bg), var(--violet-bg)); }
+  .help-section:nth-child(5n+1) h3 { color: #067A62; }
+  .help-section:nth-child(5n+2) h3 { color: #2563EB; }
+  .help-section:nth-child(5n+3) h3 { color: #7C3AED; }
+  .help-section:nth-child(5n+4) h3 { color: #DB2777; }
+  .help-section:nth-child(5n+5) h3 { color: #B45309; }
+  .help-tip { background: #F7F9FF; }
 
   @media (max-width: 760px) {
     header { padding: 0 16px; }
@@ -731,8 +686,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.1</div>
-    <button class="help-btn theme-btn" id="themeBtn" onclick="cycleTheme()" title="Switch colour theme">◐ Auto</button>
+    <div class="badge">v1.2</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -821,7 +775,7 @@
         <input type="text" id="genSheet" placeholder="e.g. Sheet1">
       </div>
     </div>
-    <div style="margin-top:14px;padding:10px 14px;background:var(--accent-light);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--accent);">
+    <div style="margin-top:14px;padding:10px 14px;background:var(--accent-light);border-radius:8px;font-family:var(--sans);font-size:11px;color:var(--accent);">
       ℹ Reads each row as tilde-delimited fields. Date cells auto-formatted to DD/MM/YYYY. No field mapping or sanitization applied.
     </div>
   </div>
@@ -982,6 +936,19 @@
         <label for="emailSign">Signature name</label>
         <input type="text" id="emailSign" value="Vipin Nair">
       </div>
+      <div class="field-group">
+        <label for="gmailTo">Gmail draft: To email addresses</label>
+        <input type="text" id="gmailTo" value="" placeholder="e.g. amitkj@iima.ac.in, roshand@iima.ac.in" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label for="gmailCc">Gmail draft: Cc (optional)</label>
+        <input type="text" id="gmailCc" value="" placeholder="comma-separated" autocomplete="off">
+      </div>
+      <div class="field-group" style="grid-column:1/-1;">
+        <label for="gmailAccount">Gmail account to draft from (optional)</label>
+        <input type="text" id="gmailAccount" value="" placeholder="e.g. vipinn@iima.ac.in — leave blank to use your default Google account" autocomplete="off">
+        <div class="field-help">Use this if you are signed in to more than one Google account. These fields are remembered in this browser.</div>
+      </div>
     </div>
     <div class="email-preview-box">
       <div class="email-field-row">
@@ -996,6 +963,7 @@
       <div class="email-body" id="emailBody"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+      <button class="btn btn-primary" id="btnGmailDraft" style="font-size:12px;" title="Opens a Gmail draft with To, Cc and Subject filled in, and copies the formatted email so you can paste it">✉ Draft in Gmail</button>
       <button class="btn btn-outline" id="btnCopyEmail" style="font-size:12px;">⧉ Copy Email</button>
       <button class="btn btn-secondary" id="btnEmailXls" style="font-size:12px;">⬇ Download Email as Excel</button>
     </div>
@@ -1132,6 +1100,9 @@
         <p>After uploading, an approval email is auto-generated with a table of all payments. Use it to get payment approval from management.</p>
         <ul>
           <li><strong>To</strong> and <strong>Signature name</strong> are editable at the top of the panel and are remembered.</li>
+          <li><strong>&#x2709; Draft in Gmail</strong> — opens a new Gmail draft with the To and Cc addresses and the subject filled in, and copies the formatted email (with the payment table) to your clipboard. Click in the message body and press <strong>Ctrl+V</strong> (&#x2318;V on Mac) to paste it, attach the Excel if needed, then send. Gmail keeps it in Drafts until you send it.</li>
+          <li>Fill <strong>Gmail draft: To</strong> (and optional <strong>Cc</strong>) once with the approvers' email addresses — they are remembered. If you are signed in to several Google accounts, put the one to send from in <strong>Gmail account</strong>.</li>
+          <li>If the browser blocks the Gmail window, allow pop-ups for this page and click again.</li>
           <li><strong>Copy Email</strong> — copies subject + body to the clipboard. Paste into Outlook or Gmail.</li>
           <li><strong>Download Email as Excel</strong> — downloads the payment table as a .xlsx file to attach to the approval email.</li>
           <li>Set the <strong>Letter / Batch No</strong> (e.g. 01, 02) in configuration — it goes into the email subject line.</li>
@@ -1149,8 +1120,6 @@
           <dd>Client code, product code, bank code, CC emails, workflow filter, Debit A/C (per fund type), email To and signature are saved <strong>in this browser only</strong>. They are not shared with anyone else.</dd>
           <dt>&#8634; Restore defaults</dt>
           <dd>The link in the Payment Configuration heading puts all saved settings back to the original defaults.</dd>
-          <dt>&#9680; Theme</dt>
-          <dd>The header button switches between Auto (follows your computer), Light and Dark.</dd>
         </dl>
       </div>
 
@@ -1198,7 +1167,7 @@
 </div>
 
 <footer style="border-top:1px solid var(--border);padding:20px 40px;text-align:center;background:var(--surface);">
-  <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2;">
+  <div style="font-family:var(--sans);font-size:12px;color:var(--text2);line-height:2;">
     <div>Built by <strong style="color:var(--text);">Vipin Nair</strong> · 
       <a href="mailto:vipinn@iima.ac.in" style="color:var(--accent);text-decoration:none;">vipinn@iima.ac.in</a> · 
       <a href="tel:+918160203197" style="color:var(--accent);text-decoration:none;">+91 8160203197</a>
@@ -2290,7 +2259,7 @@ function renderEmailTemplate() {
   document.getElementById('emailSubject').textContent   = m.subject;
   document.getElementById('emailToPreview').textContent = m.to || '—';
 
-  var tblStyle = 'width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin:10px 0;';
+  var tblStyle = 'width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px;margin:10px 0;';
   var thStyle  = 'padding:8px 12px;background:var(--surface2);border:1px solid var(--border);text-align:left;font-size:10px;letter-spacing:0.08em;color:var(--text2);';
   var tdStyle  = 'padding:7px 12px;border:1px solid var(--border);vertical-align:top;color:var(--text);';
   var tdAmtStyle = 'padding:7px 12px;border:1px solid var(--border);text-align:right;color:var(--accent2);font-weight:600;white-space:nowrap;';
@@ -2321,7 +2290,7 @@ function renderEmailTemplate() {
     '</tr>';
 
   document.getElementById('emailBody').innerHTML =
-    '<div style="font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--text);">' +
+    '<div style="font-family:var(--sans);font-size:13px;line-height:1.8;color:var(--text);">' +
     '<p>Dear Sir,</p><br>' +
     '<p>Please approve below <strong>' + esc(m.fundType) + '</strong> payments</p>' +
     '<p><strong>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</strong></p><br>' +
@@ -2331,12 +2300,13 @@ function renderEmailTemplate() {
   panel.classList.add('visible');
 }
 
-// Plain-text copy (tab-separated table, pastes well into Outlook/Gmail)
-function copyEmail() {
-  var m = emailData();
+// Plain-text email (tab-separated table, pastes well into Outlook/Gmail)
+function emailPlainText(m, withSubject) {
   var lines = [];
-  lines.push('Subject: ' + m.subject);
-  lines.push('');
+  if (withSubject) {
+    lines.push('Subject: ' + m.subject);
+    lines.push('');
+  }
   lines.push('Dear Sir,');
   lines.push('');
   lines.push('Please approve below ' + m.fundType + ' payments');
@@ -2352,8 +2322,11 @@ function copyEmail() {
   lines.push('');
   lines.push('Thanks & Regards,');
   lines.push(m.sign);
+  return lines.join('\n');
+}
 
-  navigator.clipboard.writeText(lines.join('\n'))
+function copyEmail() {
+  navigator.clipboard.writeText(emailPlainText(emailData(), true))
     .then(function(){ showToast('Email copied to clipboard'); })
     .catch(function(){ showToast('Could not copy — your browser blocked clipboard access', 'error'); });
 }
@@ -2381,6 +2354,106 @@ function downloadEmailXls() {
   showToast('Payment Letter Excel downloaded');
 }
 
+// ─── Draft in Gmail ──────────────────────────────────────────────────────────
+// Gmail's compose link only takes plain text, so the formatted email (with the
+// payment table) goes to the clipboard and the user pastes it into the draft.
+var GMAIL_URL_LIMIT = 7000;
+
+function splitEmails(text) {
+  return String(text || '').split(/[\s,;]+/).map(function(e){ return e.trim(); }).filter(Boolean);
+}
+
+// Email HTML with fixed colours (the on-screen preview uses theme variables,
+// which mean nothing once pasted into Gmail)
+function emailHtmlForGmail(m) {
+  var font = 'font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a2e;';
+  var cell = 'padding:6px 10px;border:1px solid #c9d1e0;vertical-align:top;';
+  var head = cell + 'background:#eef2fa;font-weight:bold;text-align:left;';
+  var rows = m.rows.map(function(x, i){
+    return '<tr>' +
+      '<td style="' + cell + '">' + (i + 1) + '</td>' +
+      '<td style="' + cell + '">' + esc(x.name) + '</td>' +
+      '<td style="' + cell + 'text-align:right;white-space:nowrap;">' + fmtINR(x.amount) + '</td>' +
+      '<td style="' + cell + '">' + esc(x.project) + '</td>' +
+      '<td style="' + cell + '">' + esc(x.purpose) + '</td>' +
+      '</tr>';
+  }).join('');
+  return '<div style="' + font + '">' +
+    '<p>Dear Sir,</p>' +
+    '<p>Please approve below <b>' + esc(m.fundType) + '</b> payments</p>' +
+    '<p><b>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</b></p>' +
+    '<table style="border-collapse:collapse;' + font + '">' +
+      '<tr><th style="' + head + '">#</th><th style="' + head + '">Vendor</th>' +
+      '<th style="' + head + 'text-align:right;">Amount (Rs)</th><th style="' + head + '">Project</th>' +
+      '<th style="' + head + '">Purpose</th></tr>' +
+      rows +
+      '<tr><td colspan="2" style="' + head + '">TOTAL</td>' +
+      '<td style="' + head + 'text-align:right;white-space:nowrap;">' + m.totalFmt + '</td>' +
+      '<td colspan="2" style="' + head + '"></td></tr>' +
+    '</table>' +
+    '<p>Thanks &amp; Regards,<br>' + esc(m.sign) + '</p>' +
+    '</div>';
+}
+
+function gmailComposeUrl(m, to, cc, body) {
+  var params = ['view=cm', 'fs=1'];
+  var account = document.getElementById('gmailAccount').value.trim();
+  if (account) params.push('authuser=' + encodeURIComponent(account));
+  if (to.length) params.push('to=' + encodeURIComponent(to.join(',')));
+  if (cc.length) params.push('cc=' + encodeURIComponent(cc.join(',')));
+  params.push('su=' + encodeURIComponent(m.subject));
+  if (body) params.push('body=' + encodeURIComponent(body));
+  return 'https://mail.google.com/mail/?' + params.join('&');
+}
+
+function copyEmailHtml(m) {
+  if (!window.ClipboardItem || !navigator.clipboard || !navigator.clipboard.write) return Promise.reject();
+  var html = emailHtmlForGmail(m);
+  return navigator.clipboard.write([new ClipboardItem({
+    'text/html':  new Blob([html], { type: 'text/html' }),
+    'text/plain': new Blob([emailPlainText(m, false)], { type: 'text/plain' }),
+  })]);
+}
+
+function draftInGmail() {
+  var m  = emailData();
+  var to = splitEmails(document.getElementById('gmailTo').value);
+  var cc = splitEmails(document.getElementById('gmailCc').value);
+  var account = document.getElementById('gmailAccount').value.trim();
+  var bad = to.concat(cc).filter(function(e){ return !isValidEmail(e); });
+  if (account && !isValidEmail(account)) bad.push(account);
+  ['gmailTo','gmailCc','gmailAccount'].forEach(function(id){
+    var el = document.getElementById(id);
+    el.classList.toggle('field-invalid', splitEmails(el.value).some(function(e){ return !isValidEmail(e); }));
+  });
+  if (bad.length) {
+    showToast('Fix the email address: ' + bad[0], 'error');
+    return;
+  }
+
+  function open(url, msg) {
+    var w = window.open(url, '_blank', 'noopener');
+    if (w === null) showToast('Your browser blocked the Gmail window — allow pop-ups for this page', 'error');
+    else showToast(msg);
+  }
+
+  copyEmailHtml(m).then(function(){
+    open(gmailComposeUrl(m, to, cc, ''),
+      'Gmail draft opened — click in the message body and press Ctrl+V (\u2318V on Mac) to paste the email');
+  }).catch(function(){
+    // No rich clipboard: put the plain-text email in the draft itself if it fits
+    var url = gmailComposeUrl(m, to, cc, emailPlainText(m, false));
+    if (url.length <= GMAIL_URL_LIMIT) {
+      open(url, 'Gmail draft opened with the email filled in');
+    } else {
+      navigator.clipboard.writeText(emailPlainText(m, false)).catch(function(){});
+      open(gmailComposeUrl(m, to, cc, ''),
+        'Gmail draft opened — the email is too long for the link, paste it with Ctrl+V');
+    }
+  });
+}
+
+document.getElementById('btnGmailDraft').addEventListener('click', draftInGmail);
 document.getElementById('btnCopyEmail').addEventListener('click', copyEmail);
 document.getElementById('btnEmailXls').addEventListener('click', downloadEmailXls);
 
@@ -2644,7 +2717,8 @@ ccInput.addEventListener('paste', function(e){
 
 // ─── Saved settings (this browser only) ──────────────────────────────────────
 var SETTINGS_KEY = 'kotakPayConverter.settings';
-var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign'];
+var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign',
+                    'gmailTo','gmailCc','gmailAccount'];
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
@@ -2693,38 +2767,16 @@ function onConfigChange() {
 }
 
 ['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
- 'cfgPayDate','cfgLetterNo','emailTo','emailSign'].forEach(function(id){
+ 'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount'].forEach(function(id){
   document.getElementById(id).addEventListener('input', function(){
     if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
-    if (id === 'cfgLetterNo' || id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
+    if (id.indexOf('gmail') === 0) document.getElementById(id).classList.remove('field-invalid');
+    else if (id === 'cfgLetterNo' || id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
     else onConfigChange();
   });
 });
 
-// ─── Theme (MiyeeIndia Tech Labs: auto / light / dark) ───────────────────────
-var THEME_KEY = 'kotakPayConverter.theme';
-var THEMES    = ['auto', 'light', 'dark'];
-
-function currentTheme() {
-  try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) { return 'auto'; }
-}
-
-function applyTheme(t) {
-  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-  else document.documentElement.removeAttribute('data-theme');
-  var btn = document.getElementById('themeBtn');
-  btn.textContent = { auto: '◐ Auto', light: '☀ Light', dark: '☾ Dark' }[t] || '◐ Auto';
-  btn.title = 'Colour theme: ' + t + ' — click to switch';
-}
-
-function cycleTheme() {
-  var next = THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length];
-  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-  applyTheme(next);
-}
-
 // ─── Init ─────────────────────────────────────────────────────────────────────
-applyTheme(currentTheme());
 applySettings();
 document.getElementById('cfgPayDate').value = todayStr();
 setFcra(false);
