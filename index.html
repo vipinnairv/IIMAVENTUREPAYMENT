@@ -697,7 +697,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.6</div>
+    <div class="badge">v1.7</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -1400,15 +1400,19 @@ function fixLeadingZeros(rows, sheet, colName) {
   }
   if (accColIdx < 0) return;
 
-  // For each data row, read the raw cell and get formatted text
+  // For each data row, read the raw cell and get formatted text. Use the
+  // sheet row each object came from (__rowNum__): sheet_to_json skips blank
+  // rows, so counting from the header would shift accounts onto other vendors.
   for (var i = 0; i < rows.length; i++) {
-    var dataRow = range.s.r + 1 + i; // skip header
+    var dataRow = rows[i].__rowNum__ !== undefined ? rows[i].__rowNum__ : range.s.r + 1 + i;
     var cellRef2 = XLSX.utils.encode_cell({r: dataRow, c: accColIdx});
     var cell2 = sheet[cellRef2];
     if (cell2) {
       // If cell has a formatted text (w), use it; else if it has a string value (v), use it
       var textVal = cell2.w || String(cell2.v || '');
       rows[i][colName] = textVal;
+      // Stored as a plain number: a leading 0 (or digits past 15) may already be lost
+      if (cell2.t === 'n' && textVal.charAt(0) !== '0') rows[i].__accNumeric = true;
     }
   }
 }
@@ -1734,6 +1738,7 @@ function parseVendorInvoice(rows) {
       ifsc:         ifsc,
       pmtType:      autoType,
       accNo:        String(accNo),
+      accFromNumber:!!r.__accNumeric,
       amount:       amount,
       tdsAmt:       tds,
       date:         date,
@@ -1782,6 +1787,7 @@ function parseExpenseClaim(rows) {
       ifsc:         ifsc,
       pmtType:      autoType,
       accNo:        String(accNo),
+      accFromNumber:!!r.__accNumeric,
       amount:       amount,
       tdsAmt:       0,
       date:         date,
@@ -1964,6 +1970,7 @@ function validateAll() {
     else if (!IFSC_RE.test(e.ifsc)) rowAdd(i, 'ifsc', 'error', 'IFSC "' + e.ifsc + '" is not valid (11 characters, e.g. HDFC0001234)');
 
     if (!e.accNo) rowAdd(i, 'accNo', 'error', 'Account number is empty');
+    else if (r.accFromNumber && !isEdited(r, 'accNo')) rowAdd(i, 'accNo', 'warn', 'The ERP file stored this account number as a number — if it should start with 0, the zero was lost there; check it and edit the cell');
     else if (!/^\d+$/.test(e.accNo)) rowAdd(i, 'accNo', 'warn', 'Account number contains letters or symbols');
     else if (e.accNo.length < 9 || e.accNo.length > 18) rowAdd(i, 'accNo', 'warn', 'Account number has ' + e.accNo.length + ' digits (usually 9–18)');
 
@@ -2554,6 +2561,11 @@ function downloadXls() {
   var cfg  = getConfig();
   var data = [KOTAK_HEADERS].concat(parsedRows.map(function(r){ return buildKotakRow(r, cfg); }));
   var ws   = XLSX.utils.aoa_to_sheet(data);
+  // Give every text cell Excel's Text format (@), so account numbers keep
+  // their leading zeros even if someone edits the cell in Excel
+  Object.keys(ws).forEach(function(ref){
+    if (ref.charAt(0) !== '!' && ws[ref].t === 's') ws[ref].z = '@';
+  });
   var wb2  = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb2, ws, 'Payments');
   XLSX.writeFile(wb2, 'Kotak_Pmt_' + (fileName||stamp()) + '.xls');
