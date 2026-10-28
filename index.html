@@ -697,7 +697,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.3</div>
+    <div class="badge">v1.4</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -949,7 +949,7 @@
       </div>
       <div class="field-group">
         <label for="gmailTo">Gmail draft: To email addresses</label>
-        <input type="text" id="gmailTo" value="" placeholder="e.g. amitkj@iima.ac.in, roshand@iima.ac.in" autocomplete="off">
+        <input type="text" id="gmailTo" value="amitkj@iima.ac.in, roshand@iima.ac.in, purushottamn@iima.ac.in, hetalc@iima.ac.in, neeraj@iima.ac.in, sanea@iima.ac.in" placeholder="comma-separated email addresses" autocomplete="off">
       </div>
       <div class="field-group">
         <label for="gmailCc">Gmail draft: Cc (optional)</label>
@@ -2801,7 +2801,11 @@ function savedDebit() {
 function applySettings() {
   var s = loadSettings();
   SAVED_FIELDS.forEach(function(id){
-    if (typeof s[id] === 'string') document.getElementById(id).value = s[id];
+    // A saved blank never hides a non-empty default (e.g. a To list added in
+    // a later version, after the blank field had already been saved)
+    if (typeof s[id] === 'string' && (s[id] !== '' || DEFAULT_SETTINGS[id] === '')) {
+      document.getElementById(id).value = s[id];
+    }
   });
   renderCcChips();
 }
