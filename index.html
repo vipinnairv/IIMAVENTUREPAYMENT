@@ -697,7 +697,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.8</div>
+    <div class="badge">v1.9</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -1139,6 +1139,8 @@
           <li><strong>Copy Email</strong> — copies subject + body to the clipboard. Paste into Outlook or Gmail.</li>
           <li><strong>Download Email as Excel</strong> — downloads the payment table as a .xlsx file to attach to the approval email.</li>
           <li>Set the <strong>Letter / Batch No</strong> (e.g. 01, 02) in configuration — it goes into the email subject line.</li>
+          <li><strong>Neat formatting:</strong> in the approval email (preview, Gmail draft, Copy Email and the Email Excel), vendor names are shown in Title Case ("ACME TECHNOLOGIES PVT LTD" → "Acme Technologies Pvt Ltd") and the purpose as a sentence ("CONSULTING FEES FOR SEPTEMBER" → "Consulting fees for September"), with the purpose column justified. Short forms like GST, HDFC, LLP and IIMA stay in capitals. Text that already mixes capitals and small letters is kept exactly as written. The bank files are not changed.</li>
+          <li>If a name still doesn't look right (for example an acronym the app doesn't know, like "ABC"), edit the Beneficiary Name in the table using mixed case (e.g. "ABC Consultants") and the email uses it exactly.</li>
         </ul>
       </div>
 
@@ -2262,16 +2264,78 @@ function fmtINR(n) {
   return new Intl.NumberFormat('en-IN').format(n);
 }
 
+// ─── Readable case for the approval email (the bank file is not touched) ─────
+// Only text that is ALL CAPS or all lower case is changed; mixed case was
+// written deliberately (e.g. "ABC Consultants", "McKinsey") and is kept.
+var KEEP_UPPER = {};
+('LLP LLC OPC HUF IIM IIMA IIMAV CIIE GST IGST CGST SGST TDS RCM AMC HR IT CA CS MOU NDA PO WO SOW FY ' +
+ 'AWS API UI UX MIS ERP CRM TA DA EMD BG FD NEFT RTGS IFT UPI KYC PAN TAN ICAI CEO CFO CTO COO MD VC PE ' +
+ 'ESOP AGM EGM ROC MCA SEBI RBI DPIIT DST SISFS TBI FCRA NFC FC PR IP USD INR EUR GBP SBI HDFC ICICI IDBI ' +
+ 'LIC TCS KPMG EY PWC BDO IBM HP LG AI ML IOT NGO CSR EV UK USA US UAE NCR CCTV LED AC PC SSL DNS SMS OTP')
+  .split(' ').forEach(function(w){ KEEP_UPPER[w] = true; });
+// No vowels, but ordinary words rather than acronyms
+var NOT_ACRONYM = { PVT: 1, LTD: 1, MR: 1, MRS: 1, MS: 1, DR: 1, ST: 1, SMT: 1, JR: 1, SR: 1, BROS: 1 };
+var SMALL_WORDS = { and: 1, of: 1, the: 1, for: 1, in: 1, at: 1, by: 1, on: 1, to: 1, with: 1, a: 1, an: 1 };
+var PROPER_WORDS = {};
+('january february march april may june july august september october november december ' +
+ 'monday tuesday wednesday thursday friday saturday sunday india indian ahmedabad gujarat')
+  .split(' ').forEach(function(w){ PROPER_WORDS[w] = true; });
+
+function capFirst(w) {
+  // "d'souza" -> "D'Souza", "multi-media" -> "Multi-Media"
+  return w.toLowerCase().replace(/(^|[-'(\/])([a-z])/g, function(m, sep, ch){ return sep + ch.toUpperCase(); });
+}
+
+// mode 'title' for names, 'sentence' for the purpose
+function caseWord(w, isFirst, mode) {
+  var letters = w.replace(/[^A-Za-z]/g, '');
+  if (!letters) return w;
+  var up = letters.toUpperCase();
+  if (/\d/.test(w)) return /^\d+(st|nd|rd|th)$/i.test(w) ? w.toLowerCase() : w.toUpperCase();   // 1st, Q3, FY26
+  if (/^([A-Za-z]\.)+[A-Za-z]?\.?$/.test(w)) return w.toUpperCase();                            // A.K.
+  if (KEEP_UPPER[up] || /^(II|III|IV|VI|VII|VIII|IX|XI|XII)$/.test(up)) return w.toUpperCase();
+  if (!NOT_ACRONYM[up] && letters.length >= 2 && letters.length <= 5 && !/[AEIOUY]/.test(up)) return w.toUpperCase();
+  var lower = w.toLowerCase();
+  if (PROPER_WORDS[lower.replace(/[^a-z]/g, '')]) return capFirst(w);
+  if (mode === 'sentence') return isFirst ? capFirst(w) : lower;
+  if (!isFirst && SMALL_WORDS[lower]) return lower;
+  return capFirst(w);
+}
+
+function hasMixedCase(s) {
+  return /[a-z]/.test(s) && /[A-Z]/.test(s);
+}
+
+function applyCase(text, mode) {
+  var s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!s) return s;
+  if (hasMixedCase(s)) return s.charAt(0).toUpperCase() + s.slice(1);
+  var first = true;
+  return s.split(' ').map(function(w){
+    var out = caseWord(w, first, mode);
+    if (/[A-Za-z0-9]/.test(w)) first = false;
+    return out;
+  }).join(' ');
+}
+
+function properName(name) {
+  return applyCase(name, 'title');
+}
+
+function sentenceCase(text) {
+  return applyCase(text, 'sentence');
+}
+
 function emailData() {
   var cfg  = getConfig();
   var d    = parseISODate(cfg.payDateRaw);
   var rows = parsedRows.map(function(r){
     return {
-      name:       emailName(r),
+      name:       properName(emailName(r)),
       amount:     safeAmount(effRow(r, cfg)),
       project:    extractProject(r.costCenter),
-      purpose:    sanitize(cleanPurpose(r.purpose)),
-      purposeRaw: cleanPurpose(r.purpose),
+      purpose:    sentenceCase(sanitize(cleanPurpose(r.purpose))),
+      purposeRaw: sentenceCase(cleanPurpose(r.purpose)),
     };
   });
   var total    = rows.reduce(function(s, x){ return s + x.amount; }, 0);
@@ -2303,8 +2367,8 @@ function renderEmailTemplate() {
 
   var tblStyle = 'width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px;margin:10px 0;';
   var thStyle  = 'padding:8px 12px;background:var(--surface2);border:1px solid var(--border);text-align:left;font-size:10px;letter-spacing:0.08em;color:var(--text2);';
-  var tdStyle  = 'padding:7px 12px;border:1px solid var(--border);vertical-align:top;color:var(--text);';
-  var tdAmtStyle = 'padding:7px 12px;border:1px solid var(--border);text-align:right;color:var(--accent2);font-weight:600;white-space:nowrap;';
+  var tdStyle  = 'padding:7px 12px;border:1px solid var(--border);vertical-align:top;color:var(--text);white-space:normal;';
+  var tdAmtStyle = 'padding:7px 12px;border:1px solid var(--border);vertical-align:top;text-align:right;color:var(--accent2);font-weight:600;white-space:nowrap;';
   var tdTotStyle = 'padding:8px 12px;border:1px solid var(--border);text-align:right;color:var(--accent-strong);font-weight:600;background:var(--surface2);';
 
   var headerRow = '<tr>' +
@@ -2312,7 +2376,7 @@ function renderEmailTemplate() {
     '<th style="' + thStyle + '">Vendor</th>' +
     '<th style="' + thStyle + 'text-align:right;">Amount (Rs)</th>' +
     '<th style="' + thStyle + '">Project</th>' +
-    '<th style="' + thStyle + '">Purpose</th>' +
+    '<th style="' + thStyle + 'width:42%;">Purpose</th>' +
     '</tr>';
 
   var dataRows = m.rows.map(function(x, i){
@@ -2321,7 +2385,7 @@ function renderEmailTemplate() {
       '<td style="' + tdStyle + '">' + esc(x.name) + '</td>' +
       '<td style="' + tdAmtStyle + '">' + fmtINR(x.amount) + '</td>' +
       '<td style="' + tdStyle + 'color:var(--text2);">' + esc(x.project) + '</td>' +
-      '<td style="' + tdStyle + 'color:var(--text2);">' + esc(x.purpose) + '</td>' +
+      '<td style="' + tdStyle + 'color:var(--text2);text-align:justify;">' + esc(x.purpose) + '</td>' +
       '</tr>';
   }).join('');
 
@@ -2427,7 +2491,7 @@ function emailHtmlForGmail(m, withSign) {
       '<td style="' + cell + '">' + esc(x.name) + '</td>' +
       '<td style="' + cell + 'text-align:right;white-space:nowrap;">' + fmtINR(x.amount) + '</td>' +
       '<td style="' + cell + '">' + esc(x.project) + '</td>' +
-      '<td style="' + cell + '">' + esc(x.purpose) + '</td>' +
+      '<td style="' + cell + 'text-align:justify;">' + esc(x.purpose) + '</td>' +
       '</tr>';
   }).join('');
   return '<div style="' + font + '">' +
@@ -2437,7 +2501,7 @@ function emailHtmlForGmail(m, withSign) {
     '<table style="border-collapse:collapse;' + font + '">' +
       '<tr><th style="' + head + '">#</th><th style="' + head + '">Vendor</th>' +
       '<th style="' + head + 'text-align:right;">Amount (Rs)</th><th style="' + head + '">Project</th>' +
-      '<th style="' + head + '">Purpose</th></tr>' +
+      '<th style="' + head + 'width:340px;">Purpose</th></tr>' +
       rows +
       '<tr><td colspan="2" style="' + head + '">TOTAL</td>' +
       '<td style="' + head + 'text-align:right;white-space:nowrap;">' + m.totalFmt + '</td>' +
