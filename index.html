@@ -697,7 +697,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.7</div>
+    <div class="badge">v1.8</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -953,7 +953,7 @@
       </div>
       <div class="field-group">
         <label for="gmailCc">Gmail draft: Cc</label>
-        <input type="text" id="gmailCc" value="roshand@iima.ac.in, purushottamn@iima.ac.in, hetalc@iima.ac.in, neeraj@iima.ac.in, sanea@iima.ac.in" placeholder="comma-separated" autocomplete="off">
+        <input type="text" id="gmailCc" value="roshand@iima.ac.in, purushottamn@iima.ac.in, hetalc@iima.ac.in, neeraj@iima.ac.in, sanea@iima.ac.in, vipinn@iima.ac.in" placeholder="comma-separated" autocomplete="off">
       </div>
       <div class="field-group" style="grid-column:1/-1;">
         <label for="gmailAccount">Gmail account to draft from (optional)</label>
@@ -1134,7 +1134,7 @@
           <li><strong>&#x2709; Draft in Gmail</strong> — opens a new Gmail draft with the To and Cc addresses and the subject filled in, and copies the formatted email (with the payment table) to your clipboard. Gmail cannot receive a table through a link, so you paste it: in the draft, <strong>triple-click</strong> the line "Triple-click this line…" and press <strong>Ctrl+V</strong> (&#x2318;V on Mac). The full email with the table replaces that line. Attach the Excel if needed, then send. Gmail keeps it in Drafts until you send it.</li>
           <li>The steps also appear under the buttons, with <strong>Copy table again</strong> in case you copied something else in between.</li>
           <li><strong>Sign-off in Gmail draft</strong> — leave on "None" if your Gmail already adds your signature (so it isn't repeated); choose "Add" otherwise.</li>
-          <li>By default the draft goes <strong>To</strong> Amitkumar (amitkj@iima.ac.in), with Roshan, Purushottam, Hetal, Neeraj and Sanea in <strong>Cc</strong>. Change <strong>Gmail draft: To</strong> and <strong>Cc</strong> if needed — your changes are remembered. If you are signed in to several Google accounts, put the one to send from in <strong>Gmail account</strong>.</li>
+          <li>By default the draft goes <strong>To</strong> Amitkumar (amitkj@iima.ac.in), with Roshan, Purushottam, Hetal, Neeraj, Sanea and Vipin (vipinn@iima.ac.in) in <strong>Cc</strong>. Change <strong>Gmail draft: To</strong> and <strong>Cc</strong> if needed — your changes are remembered. If you are signed in to several Google accounts, put the one to send from in <strong>Gmail account</strong>.</li>
           <li>If the browser blocks the Gmail window, allow pop-ups for this page and click again.</li>
           <li><strong>Copy Email</strong> — copies subject + body to the clipboard. Paste into Outlook or Gmail.</li>
           <li><strong>Download Email as Excel</strong> — downloads the payment table as a .xlsx file to attach to the approval email.</li>
@@ -2826,6 +2826,7 @@ function savedDebit() {
 var OLD_DEFAULTS = {
   emailTo: ['Amitkumar, Roshan, Purushottam, Hetal, Neeraj, Sanea'],
   gmailTo: ['amitkj@iima.ac.in, roshand@iima.ac.in, purushottamn@iima.ac.in, hetalc@iima.ac.in, neeraj@iima.ac.in, sanea@iima.ac.in'],
+  gmailCc: ['roshand@iima.ac.in, purushottamn@iima.ac.in, hetalc@iima.ac.in, neeraj@iima.ac.in, sanea@iima.ac.in'],
 };
 
 function sameList(a, b) {
