@@ -498,6 +498,10 @@
 
   /* Required marker & helper text */
   .req { color: var(--error); font-weight: 600; }
+  .proj-row { display: grid; grid-template-columns: minmax(0,1fr) 170px auto; gap: 8px; margin-bottom: 6px; align-items: center; }
+  .proj-row .row-del { padding: 6px 8px; }
+  td input.cell-input.cell-auto { color: var(--violet); font-weight: 600; }
+  .confirm-grid dd { white-space: pre-line; }
   .gmail-steps {
     margin-top: 14px; padding: 14px 18px; border-radius: 10px;
     background: linear-gradient(135deg, var(--pink-bg), var(--violet-bg));
@@ -697,7 +701,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.9</div>
+    <div class="badge">v1.10</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -836,7 +840,13 @@
       <div class="field-group">
         <label for="cfgDebitAc">Debit A/C <span class="req">*</span></label>
         <input type="text" id="cfgDebitAc" value="" placeholder="Enter debit account number" inputmode="numeric" autocomplete="off">
-        <div class="field-help">Defaults: Non-FCRA 0711160987 · FCRA 4812763856. Changes are remembered separately per fund type.</div>
+        <div class="field-help">Defaults: Non-FCRA 0711160987 · FCRA 4812763856. Changes are remembered separately per fund type. For Non-FCRA, used for every project not in the project list below.</div>
+      </div>
+      <div class="field-group full" id="projDebitGroup">
+        <label>Non-FCRA project debit accounts <span class="cc-count" id="projDebitCount"></span></label>
+        <div id="projDebits"></div>
+        <div><button type="button" class="settings-reset" id="addProjDebit">+ Add project</button></div>
+        <div class="field-help">Each payment's project comes from its ERP cost center (e.g. "SAP - NFC: Main" is SAP). A listed project fills its own debit account; all other Non-FCRA projects use the Debit A/C above. Not used for FCRA.</div>
       </div>
       <div class="field-group">
         <label for="cfgFilter">Filter: Workflow State</label>
@@ -1075,6 +1085,16 @@
         <h3><span class="h-icon">5&#xFE0F;&#x20E3;</span> Fill the Debit Account <span class="req">*</span></h3>
         <p>The Debit A/C is filled in for you from the fund type — <strong>Non-FCRA 0711160987</strong>, <strong>FCRA 4812763856</strong> — and goes into every row. If you change it, your value is remembered for that fund type; <strong>Restore default settings</strong> brings back these accounts.</p>
         <div class="help-tip">If you edit one row's Debit A/C in the table, that row keeps your value even if you change the configuration later. Download stays disabled while the Debit A/C is empty.</div>
+        <p><strong>Non-FCRA project accounts:</strong> some projects pay from their own account. Each payment's project is read from its ERP cost center (for example "SAP - NFC: Main" is SAP), and a listed project fills its own debit account in that row, shown in violet:</p>
+        <dl class="help-grid">
+          <dt>SAP</dt><dd>4849983128</dd>
+          <dt>Innocity</dt><dd>4813667368</dd>
+          <dt>IIMAVERICKS</dt><dd>0711320749</dd>
+          <dt>General</dt><dd>0711160987</dd>
+          <dt>Designated Fund</dt><dd>0711160987</dd>
+          <dt>All other Non-FC</dt><dd>0711160987 (the Debit A/C field)</dd>
+        </dl>
+        <div class="help-tip">Edit the list under <strong>Non-FCRA project debit accounts</strong> in Payment Configuration: change an account, remove a project with ✕, or add one with <strong>+ Add project</strong>. Changes are remembered in this browser; <strong>Restore default settings</strong> brings back the list above. The confirmation box before download shows the number of payments and total for each debit account.</div>
       </div>
 
       <div class="help-section">
@@ -1292,6 +1312,7 @@ function setFcra(fcra) {
   document.getElementById('optNonFcra').classList.toggle('selected', !fcra);
   document.getElementById('cfgFundType').value = fcra ? 'FCRA' : 'Non-FCRA';
   document.getElementById('cfgDebitAc').value  = savedDebit();  // FCRA and Non-FCRA each keep their own debit A/C
+  document.getElementById('projDebitGroup').style.display = fcra ? 'none' : '';
   if (parsedRows.length) renderPreview();
 }
 
@@ -1860,7 +1881,7 @@ function defaultValue(r, f, cfg) {
     case 'accNo':  return String(r.accNo || '').trim();
     case 'amount': return String(r.amount);
     case 'date':   return cfg.payDate;
-    case 'debit':  return cfg.debitAc;
+    case 'debit':  var pd = projectDebitFor(r); return pd ? pd.account.trim() : cfg.debitAc;
     case 'enr1':   return getEnr1(r);
     case 'enr2':   return sanitize(r.purpose);
   }
@@ -1949,7 +1970,7 @@ function validateAll() {
     add(v.rows[i], level, field, msg);
   }
 
-  var usesCfgDebit = parsedRows.some(function(r){ return !isEdited(r, 'debit'); });
+  var usesCfgDebit = parsedRows.some(function(r){ return !isEdited(r, 'debit') && !projectDebitFor(r); });
   if (usesCfgDebit && !cfg.debitAc) {
     add(v.global, 'error', 'debit', 'Debit A/C is empty — enter it in Payment Configuration');
   } else if (usesCfgDebit && !/^\d+$/.test(cfg.debitAc)) {
@@ -1986,6 +2007,10 @@ function validateAll() {
       if (!d) rowAdd(i, 'date', 'error', 'Date "' + e.date + '" is not in DD/MM/YYYY format');
       else if (d < today) rowAdd(i, 'date', 'error', 'Date ' + e.date + ' is in the past');
     }
+    var pdRow = !isEdited(r, 'debit') && projectDebitFor(r);
+    if (pdRow && !/^\d+$/.test(e.debit)) {
+      rowAdd(i, 'debit', 'error', 'Project ' + pdRow.project + ' debit A/C "' + e.debit + '" in the project list is not a valid account number');
+    }
     if (isEdited(r, 'debit')) {
       if (!e.debit) rowAdd(i, 'debit', 'error', 'Debit A/C is empty');
       else if (!/^\d+$/.test(e.debit)) rowAdd(i, 'debit', 'warn', 'Debit A/C contains characters other than digits');
@@ -2016,7 +2041,9 @@ function applyValidation(v) {
       var el = document.getElementById('cel_' + f + i);
       if (!el) return;
       var mine = issues.filter(function(x){ return x.field === f; });
-      if (!isEdited(r, f)) mine = mine.concat(v.global.filter(function(x){ return x.field === f; }));
+      if (!isEdited(r, f) && !(f === 'debit' && projectDebitFor(r))) {
+        mine = mine.concat(v.global.filter(function(x){ return x.field === f; }));
+      }
       var lvl = mine.some(function(x){ return x.level === 'error'; }) ? 'error' : (mine.length ? 'warn' : '');
       el.classList.toggle('cell-error', lvl === 'error');
       el.classList.toggle('cell-warn',  lvl === 'warn');
@@ -2149,6 +2176,13 @@ function renderPreview() {
       '<option value="IFT"'  + (ift ? ' selected' : '') + '>IFT</option>' +
       '</select>';
 
+    function debitCell() {
+      var pd = !isEdited(r, 'debit') && projectDebitFor(r);
+      return pd ? inp('debit', 'cell-auto', ' inputmode="numeric" data-tip="Project ' + esc(pd.project) +
+                      ': debit A/C from the Non-FCRA project list"')
+                : inp('debit', 'cell-muted', ' inputmode="numeric"');
+    }
+
     var iftTip = ift ? ' readonly data-tip="IFT payments always use the Kotak IFSC ' + KOTAK_IFSC + '. Switch the row to NEFT to edit."' : '';
 
     return '<tr id="row' + i + '">' +
@@ -2163,7 +2197,7 @@ function renderPreview() {
       '<td style="min-width:130px;">' + inp('accNo',  'cell-muted', ' inputmode="numeric"') + '</td>' +
       '<td style="min-width:100px;">' + inp('amount', 'cell-amount', ' inputmode="decimal"') + '</td>' +
       '<td style="min-width:100px;">' + inp('date',   'cell-muted') + '</td>' +
-      '<td style="min-width:110px;">' + inp('debit',  'cell-muted', ' inputmode="numeric"') + '</td>' +
+      '<td style="min-width:110px;">' + debitCell() + '</td>' +
       '<td style="min-width:140px;">' + inp('enr1',   'cell-muted') + '</td>' +
       '<td style="min-width:240px;">' + inp('enr2',   'cell-muted') + '</td>' +
       '<td><button type="button" class="row-del" title="Remove this payment" aria-label="Remove row ' + (i + 1) + '" onclick="deleteRow(' + i + ')">✕</button></td>' +
@@ -2697,7 +2731,11 @@ function openConfirm(kind, v) {
     ['Fund type',     cfg.fundType],
     ['Payments',      parsedRows.length + ' (' + vendor + ' vendor · ' + (parsedRows.length - vendor) + ' expense)'],
     ['Total amount',  new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', minimumFractionDigits:2}).format(total)],
-    ['Debit A/C',     debits.length === 1 ? debits[0] : debits.length + ' different: ' + debits.join(', ')],
+    ['Debit A/C',     debits.length === 1 ? debits[0] : debits.map(function(d){
+                        var mine = effs.filter(function(e){ return e.debit === d; });
+                        var sum  = mine.reduce(function(s, e){ return s + safeAmount(e); }, 0);
+                        return d + ': ' + plural(mine.length, 'payment') + ', Rs ' + fmtINR(sum);
+                      }).join('\n')],
     ['Payment date',  dates.length === 1 ? dates[0] : dates.length + ' different: ' + dates.join(', ')],
     ['Payment types', neft + ' NEFT · ' + (effs.length - neft) + ' IFT'],
     ['File',          { xls: 'Kotak XLS', txt: 'Kotak TXT', both: 'Kotak XLS + TXT' }[kind]],
@@ -2862,6 +2900,81 @@ SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementByI
 // Default Kotak debit accounts, one per fund type (kept as text: leading zero)
 var DEFAULT_DEBIT = { debit_NonFCRA: '0711160987', debit_FCRA: '4812763856' };
 
+// Non-FCRA debit account per project (from Bank_Details.xlsx). Projects not
+// listed use the Debit A/C field ("All other Non FC": 0711160987).
+var DEFAULT_PROJECT_DEBITS = [
+  { project: 'SAP',             account: '4849983128' },
+  { project: 'General',         account: '0711160987' },
+  { project: 'Designated Fund', account: '0711160987' },
+  { project: 'Innocity',        account: '4813667368' },
+  { project: 'IIMAVERICKS',     account: '0711320749' },
+];
+var projectDebits = copyProjectDebits(DEFAULT_PROJECT_DEBITS);
+
+function copyProjectDebits(list) {
+  return list.map(function(e){ return { project: String(e.project || ''), account: String(e.account || '') }; });
+}
+
+function normProject(s) {
+  return String(s || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+}
+
+// The project list entry for a Non-FCRA row, matched as whole words in the
+// project part of its cost center ("SAP - NFC: Main" -> SAP); longest name first
+function projectDebitFor(r) {
+  if (isFcra) return null;
+  var proj = normProject(extractProject(r.costCenter));
+  if (!proj) return null;
+  var hay = ' ' + proj + ' ';
+  var hit = null;
+  projectDebits.forEach(function(e){
+    var key = normProject(e.project);
+    if (!key || !e.account.trim() || hay.indexOf(' ' + key + ' ') < 0) return;
+    if (!hit || key.length > normProject(hit.project).length) hit = e;
+  });
+  return hit;
+}
+
+function renderProjectDebits() {
+  var box = document.getElementById('projDebits');
+  box.innerHTML = projectDebits.map(function(e, i){
+    var bad = e.account.trim() && !/^\d+$/.test(e.account.trim());
+    return '<div class="proj-row">' +
+      '<input type="text" class="pd-project" data-i="' + i + '" value="' + esc(e.project) + '" placeholder="Project name" aria-label="Project name">' +
+      '<input type="text" class="pd-account' + (bad ? ' field-invalid' : '') + '" data-i="' + i + '" value="' + esc(e.account) +
+        '" placeholder="Debit A/C" inputmode="numeric" aria-label="Debit account for ' + esc(e.project || 'project') + '">' +
+      '<button type="button" class="row-del" data-i="' + i + '" title="Remove this project" aria-label="Remove ' + esc(e.project || 'project') + '">\u2715</button>' +
+      '</div>';
+  }).join('');
+  document.getElementById('projDebitCount').textContent = '(' + projectDebits.length + ')';
+}
+
+document.getElementById('projDebits').addEventListener('input', function(ev){
+  var t = ev.target, i = +t.getAttribute('data-i');
+  if (!projectDebits[i]) return;
+  if (t.classList.contains('pd-project')) projectDebits[i].project = t.value;
+  if (t.classList.contains('pd-account')) {
+    projectDebits[i].account = t.value;
+    t.classList.toggle('field-invalid', !!t.value.trim() && !/^\d+$/.test(t.value.trim()));
+  }
+  saveSettings();
+  onConfigChange();
+});
+document.getElementById('projDebits').addEventListener('click', function(ev){
+  var b = ev.target.closest('.row-del');
+  if (!b) return;
+  projectDebits.splice(+b.getAttribute('data-i'), 1);
+  renderProjectDebits();
+  saveSettings();
+  onConfigChange();
+});
+document.getElementById('addProjDebit').addEventListener('click', function(){
+  projectDebits.push({ project: '', account: '' });
+  renderProjectDebits();
+  var inputs = document.querySelectorAll('#projDebits .pd-project');
+  inputs[inputs.length - 1].focus();
+});
+
 function fundKey() {
   return isFcra ? 'debit_FCRA' : 'debit_NonFCRA';
 }
@@ -2875,6 +2988,7 @@ function saveSettings() {
   var s = loadSettings();
   SAVED_FIELDS.forEach(function(id){ s[id] = document.getElementById(id).value; });
   s[fundKey()] = document.getElementById('cfgDebitAc').value;
+  s.projectDebits = projectDebits;
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
 }
 
@@ -2908,14 +3022,18 @@ function applySettings() {
     if ((OLD_DEFAULTS[id] || []).some(function(old){ return sameList(old, s[id]); })) return;
     document.getElementById(id).value = s[id];
   });
+  if (Array.isArray(s.projectDebits)) projectDebits = copyProjectDebits(s.projectDebits);
   renderCcChips();
+  renderProjectDebits();
 }
 
 document.getElementById('resetSettingsBtn').addEventListener('click', function(){
   try { localStorage.removeItem(SETTINGS_KEY); } catch (e) {}
   SAVED_FIELDS.forEach(function(id){ document.getElementById(id).value = DEFAULT_SETTINGS[id]; });
   document.getElementById('cfgDebitAc').value = DEFAULT_DEBIT[fundKey()];
+  projectDebits = copyProjectDebits(DEFAULT_PROJECT_DEBITS);
   renderCcChips();
+  renderProjectDebits();
   onConfigChange();
   showToast('Default settings restored');
 });
