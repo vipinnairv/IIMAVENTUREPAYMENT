@@ -714,7 +714,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.14</div>
+    <div class="badge">v1.15</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -892,14 +892,19 @@
         <input type="text" id="cfgLetterNo" placeholder="e.g. 01">
       </div>
       <div class="field-group">
+        <label for="cfgBigAmt">Large payment alert above (Rs, optional)</label>
+        <input type="number" id="cfgBigAmt" value="" min="0" placeholder="e.g. 1000000 — blank = off">
+        <div class="field-help">Any single payment at or above this amount is flagged for a second look. Blank turns it off.</div>
+      </div>
+      <div class="field-group">
         <label for="cfgEnrMax">Enrichment max length (characters)</label>
         <input type="number" id="cfgEnrMax" value="30" min="5" max="200">
         <div class="field-help">How much of Enrichment-1/2 the Kotak payment advice shows. 30 is an assumption: set it to Kotak's limit, or to where your advice was cut off.</div>
       </div>
       <div class="field-group">
-        <label>Vendor bank memory</label>
+        <label>Payment review memory (learns from your downloads)</label>
         <div class="field-help" id="vendorMemInfo"></div>
-        <div><button type="button" class="settings-reset" id="clearVendorMem">Clear vendor memory</button></div>
+        <div><button type="button" class="settings-reset" id="clearVendorMem">Clear payment review memory</button></div>
       </div>
     </div>
   </div>
@@ -1247,8 +1252,8 @@
         <dl class="help-grid">
           <dt>Enrichment length</dt>
           <dd>The payment advice shows only part of a long Enrichment. Enrichment-2 now starts from the cleaned purpose ("Being" and the TDS part removed) and common words are shortened until it fits ("Financial Assistance" → "Fin Asst", "Reimbursement" → "Reimb", "September" → "Sep"). Anything still longer than <strong>Enrichment max length</strong> (Payment Configuration, 30 by default) gets a warning. Set the maximum to Kotak's limit, or to where your advice was cut off.</dd>
-          <dt>Vendor memory</dt>
-          <dd>After every download, this browser remembers each vendor's account number and IFSC. If a later payment to the same vendor has a different account or IFSC, the row is flagged: confirm the change with the vendor by phone before paying, as changed bank details are a common fraud. Each browser keeps its own memory; <strong>Clear vendor memory</strong> in Payment Configuration resets it.</dd>
+          <dt>Payment review (learns from history)</dt>
+          <dd>After every download, this browser remembers each vendor's account, IFSC, amounts and invoice numbers. The next batch is checked against that history and flagged (as warnings you confirm, never a hard block) when: the account or IFSC changed for a known vendor; the vendor is <strong>new</strong> (double-check the account); an <strong>invoice was already paid</strong> before (possible double payment); or the amount is <strong>far above</strong> this vendor's usual. Set <strong>Large payment alert above</strong> in Payment Configuration to also flag any single payment over a chosen amount. It is all local — nothing is sent anywhere, no key needed, and it works offline. Each browser keeps its own history; <strong>Clear payment review memory</strong> resets it. The very first batch is not second-guessed, since nothing is learned yet.</dd>
           <dt>IFSC lookup</dt>
           <dd>Each IFSC is looked up in the public RBI IFSC list (via ifsc.razorpay.com; only the IFSC code is sent). Hover an IFSC cell to see its bank and branch. An IFSC that doesn't exist is flagged. If the lookup service can't be reached, the app carries on without it.</dd>
         </dl>
@@ -2134,6 +2139,7 @@ function validateAll() {
     if (e.enr2.length > mx) rowAdd(i, 'enr2', 'warn', 'Enrichment-2 is ' + e.enr2.length + ' characters; the payment advice may show only the first ' + mx + '. Shorten it');
     var moved = vendorChange(e.name, e.accNo, e.ifsc);
     if (moved) rowAdd(i, 'accNo', 'warn', vendorChangeMsg(moved));
+    reviewRow(e.name, e.amount, e.enr1).forEach(function(x){ rowAdd(i, x.field, 'warn', x.msg); });
     if (e.pmtType !== 'IFT') {
       var ii = ifscCache[e.ifsc];
       if (ii && ii.missing) rowAdd(i, 'ifsc', 'warn', 'IFSC ' + e.ifsc + ' was not found in the RBI IFSC list — check it with the vendor');
@@ -2385,20 +2391,99 @@ function rememberVendors() {
 }
 
 function renderVendorMemInfo() {
-  var n = Object.keys(vendorMem).length;
+  var n = Math.max(Object.keys(vendorMem).length, Object.keys(reviewMem || {}).length);
   document.getElementById('vendorMemInfo').textContent = n
-    ? plural(n, 'vendor') + ' remembered in this browser. A later payment to one of them with a different account or IFSC is flagged.'
-    : 'Nothing remembered yet. After each download, this browser remembers every vendor’s account and IFSC and flags any later change.';
+    ? plural(n, 'vendor') + ' learned in this browser. A later payment is flagged when the account or IFSC changed, the vendor is new, an invoice was already paid, or the amount is far above this vendor’s usual.'
+    : 'Nothing learned yet. After each download, this browser remembers each vendor’s account, IFSC, amounts and invoices, then flags anything out of pattern next time.';
 }
 
 document.getElementById('clearVendorMem').addEventListener('click', function(){
-  if (!window.confirm('Forget the bank details of all ' + Object.keys(vendorMem).length + ' remembered vendors?')) return;
-  vendorMem = {};
-  try { localStorage.removeItem(VENDOR_KEY); } catch (e) {}
+  var n = Math.max(Object.keys(vendorMem).length, Object.keys(reviewMem).length);
+  if (!window.confirm('Forget everything learned about all ' + n + ' vendors (bank details, amounts and invoices)?')) return;
+  vendorMem = {}; reviewMem = {};
+  try { localStorage.removeItem(VENDOR_KEY); localStorage.removeItem(REVIEW_KEY); } catch (e) {}
   renderVendorMemInfo();
   onConfigChange();
-  showToast('Vendor memory cleared');
+  showToast('Payment review memory cleared');
 });
+
+// ─── Payment Review (learns from your downloads, in this browser) ─────────────
+// After every download, each vendor's amounts and invoice numbers are kept in
+// this browser. A new batch is then compared against that history and anything
+// out of pattern is flagged as a warning (never a hard block): a vendor paid
+// for the first time, an invoice already paid before, or an amount far above
+// what this vendor was usually paid. All local, no key, nothing sent out.
+var REVIEW_KEY = 'kotakPayConverter.history';
+var reviewMem  = loadReviewMem();
+
+function loadReviewMem() {
+  try { return JSON.parse(localStorage.getItem(REVIEW_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+
+function invKey(invNo) {
+  return String(invNo || '').toUpperCase().replace(/[^A-Z0-9]+/g, '');
+}
+
+function bigAmt() {
+  var n = parseFloat(document.getElementById('cfgBigAmt').value);
+  return n > 0 ? n : 0;
+}
+
+// Flags for one payment, compared with what this browser has learned.
+function reviewRow(name, amount, invNo) {
+  var out = [];
+  if (isNaN(amount) || amount <= 0 || !name) return out;
+  var big = bigAmt();
+  if (big && amount >= big) out.push({ field: 'amount', msg: 'Large payment: Rs ' + fmtINR(amount) + ' is at or above your alert of Rs ' + fmtINR(big) + ' — give it a second look' });
+
+  var learned = Object.keys(reviewMem).length > 0;
+  if (!learned) return out;   // nothing learned yet: the first batch is not second-guessed
+
+  var m = reviewMem[vendorKey(name)];
+  if (!m) {
+    out.push({ field: 'name', msg: 'First payment to this vendor in your history — double-check the account number and IFSC' });
+    return out;
+  }
+  var ik = invKey(invNo);
+  if (ik && m.inv && m.inv[ik]) {
+    out.push({ field: 'enr1', msg: 'Invoice ' + invNo + ' for this vendor was already paid Rs ' + fmtINR(m.inv[ik].amount) + ' on ' + m.inv[ik].date + ' — possible double payment' });
+  }
+  if (m.max > 0 && amount > m.max * 5 && amount - m.max >= 50000) {
+    out.push({ field: 'amount', msg: 'Rs ' + fmtINR(amount) + ' is much larger than usual for this vendor (up to Rs ' + fmtINR(m.max) + ' over ' + plural(m.count, 'payment') + ') — confirm the amount' });
+  }
+  return out;
+}
+
+// What this batch would add, so the "download" counts it as learned
+function reviewRowsForDownload() {
+  var cfg = getConfig();
+  return currentMode === 'generic'
+    ? genericLines().map(function(f){
+        return { name: String(f[10] || '').trim(), amount: parseAmount(f[7]), inv: String(f[29] || ''), date: String(f[4] || '').trim() };
+      })
+    : parsedRows.map(function(r){
+        var e = effRow(r, cfg);
+        return { name: e.name, amount: safeAmount(e), inv: e.enr1, date: e.date };
+      });
+}
+
+function rememberReview() {
+  reviewRowsForDownload().forEach(function(v){
+    if (!v.name || isNaN(v.amount) || v.amount <= 0) return;
+    var k = vendorKey(v.name);
+    var m = reviewMem[k] || { name: v.name, count: 0, max: 0, sum: 0, inv: {} };
+    m.name  = v.name;
+    m.count = (m.count || 0) + 1;
+    m.max   = Math.max(m.max || 0, v.amount);
+    m.sum   = (m.sum || 0) + v.amount;
+    var ik  = invKey(v.inv);
+    if (ik) { m.inv = m.inv || {}; m.inv[ik] = { amount: v.amount, date: v.date }; }
+    reviewMem[k] = m;
+  });
+  try { localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewMem)); } catch (e) {}
+  renderVendorMemInfo();
+}
 
 // ─── IFSC lookup ─────────────────────────────────────────────────────────────
 // Bank and branch for each IFSC from the public Razorpay IFSC service (only the
@@ -2506,6 +2591,7 @@ function validateGeneric() {
     if (e2.length > mx) rowAdd(i, 'enr2', 'warn', 'Enrichment-2 is ' + e2.length + ' characters; the payment advice may show only the first ' + mx);
     var moved = vendorChange(name, acc, ifsc);
     if (moved) rowAdd(i, 'accNo', 'warn', vendorChangeMsg(moved));
+    reviewRow(name, amount, String(f[29] || '')).forEach(function(x){ rowAdd(i, x.field, 'warn', x.msg); });
     if (pmt !== 'IFT' && IFSC_RE.test(ifsc)) {
       var ii = ifscCache[ifsc];
       if (ii && ii.missing) rowAdd(i, 'ifsc', 'warn', 'IFSC ' + ifsc + ' was not found in the RBI IFSC list — check it with the vendor');
@@ -3190,6 +3276,7 @@ function kotakFileName() {
 
 function doDownload(kind) {
   rememberVendors();
+  rememberReview();
   if (kind === 'xls' || kind === 'both') downloadXls();
   if (kind === 'txt') downloadTxt();
   if (kind === 'both') setTimeout(downloadTxt, 500);
@@ -3404,7 +3491,7 @@ ccInput.addEventListener('paste', function(e){
 var SETTINGS_KEY = 'kotakPayConverter.settings';
 var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign',
                     'gmailTo','gmailCc','gmailAccount','gmailSignOff','cfgExtraDebits',
-                    'cfgEnrMax','chkGmailCc','emailStage'];
+                    'cfgEnrMax','cfgBigAmt','chkGmailCc','emailStage'];
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
@@ -3558,7 +3645,7 @@ function onConfigChange() {
 
 ['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
  'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount','gmailSignOff',
- 'cfgExtraDebits','cfgEnrMax','chkGmailTo','chkGmailCc'].forEach(function(id){
+ 'cfgExtraDebits','cfgEnrMax','cfgBigAmt','chkGmailTo','chkGmailCc'].forEach(function(id){
   document.getElementById(id).addEventListener('input', function(){
     if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
     if (id.indexOf('gmail') === 0 || id.indexOf('chkGmail') === 0) {
