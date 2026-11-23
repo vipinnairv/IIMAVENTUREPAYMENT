@@ -498,6 +498,19 @@
 
   /* Required marker & helper text */
   .req { color: var(--error); font-weight: 600; }
+  .stage-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stage-btn {
+    text-align: left; padding: 10px 14px; border-radius: 10px; cursor: pointer;
+    border: 2px solid var(--border2); background: var(--surface); font-family: var(--sans); color: var(--text);
+  }
+  .stage-btn strong { display: block; font-size: 13px; }
+  .stage-btn span { font-size: 11px; color: var(--text3); }
+  .stage-btn.active { border-color: var(--violet); background: var(--violet-bg); }
+  .stage-btn.active strong { color: var(--violet); }
+  #emailTemplatePanel[data-stage="check"] .stage-approve,
+  #emailTemplatePanel[data-stage="approve"] .stage-check { display: none; }
+  .batch-badge { background: var(--violet-bg); border-color: rgba(124,58,237,0.3); color: var(--violet); font-family: var(--mono); }
+  .batch-badge:empty { display: none; }
   .proj-row { display: grid; grid-template-columns: minmax(0,1fr) 170px auto; gap: 8px; margin-bottom: 6px; align-items: center; }
   .proj-row .row-del { padding: 6px 8px; }
   td input.cell-input.cell-auto { color: var(--violet); font-weight: 600; }
@@ -701,7 +714,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.11</div>
+    <div class="badge">v1.12</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -736,13 +749,14 @@
   </div>
 
   <div class="upload-zone" id="uploadZone">
-    <input type="file" id="fileInput" accept=".xlsx,.xls" multiple style="display:none">
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.txt" multiple style="display:none">
     <div class="upload-icon">📊</div>
     <div class="upload-title" id="uploadTitle">Drop Vendor Payment or Expense Claim Report here</div>
     <div class="upload-sub" id="uploadSub">or click to browse · <strong style="color:var(--accent)">Vendor Invoice</strong> or <strong style="color:var(--accent3)">Expense Claim</strong> sheet</div>
     <div class="upload-formats">
       <span class="fmt-tag">.XLSX</span>
       <span class="fmt-tag">.XLS</span>
+      <span class="fmt-tag">.TXT</span>
     </div>
     <div class="files-loaded" id="filesLoaded" style="display:none;"></div>
   </div>
@@ -877,6 +891,16 @@
         <label for="cfgLetterNo">Letter / Batch No (for email subject)</label>
         <input type="text" id="cfgLetterNo" placeholder="e.g. 01">
       </div>
+      <div class="field-group">
+        <label for="cfgEnrMax">Enrichment max length (characters)</label>
+        <input type="number" id="cfgEnrMax" value="30" min="5" max="200">
+        <div class="field-help">How much of Enrichment-1/2 the Kotak payment advice shows. 30 is an assumption: set it to Kotak's limit, or to where your advice was cut off.</div>
+      </div>
+      <div class="field-group">
+        <label>Vendor bank memory</label>
+        <div class="field-help" id="vendorMemInfo"></div>
+        <div><button type="button" class="settings-reset" id="clearVendorMem">Clear vendor memory</button></div>
+      </div>
     </div>
   </div>
 
@@ -897,6 +921,7 @@
       <div class="preview-header-left">
         <div class="preview-title">Converted Payment Rows</div>
         <div class="count-badge" id="rowCount">0 rows</div>
+        <span class="count-badge batch-badge" id="batchBadge" title="Batch code: a fingerprint of the exact bank file. The checker opens the downloaded TXT here and must see the same code as in the email."></span>
         <span class="edit-badge" id="editBadge">edited</span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -953,20 +978,41 @@
   <!-- Email Approval Template -->
   <div class="email-template-panel" id="emailTemplatePanel">
     <div class="config-title">Email Approval Template</div>
+    <input type="hidden" id="emailStage" value="check">
+    <div class="stage-switch" role="group" aria-label="Email step">
+      <button type="button" class="stage-btn" data-stage="check"><strong>Step 1 · For checking</strong><span>Maker sends to the checkers</span></button>
+      <button type="button" class="stage-btn" data-stage="approve"><strong>Step 2 · For final approval</strong><span>Checker sends to the approver</span></button>
+    </div>
     <div class="config-grid" style="grid-template-columns:2fr 1fr;">
       <div class="field-group">
+        <label for="emailMaker">Maker (prepares the payments)</label>
+        <input type="text" id="emailMaker" value="Hetal Chauhan">
+      </div>
+      <div class="field-group">
+        <label for="emailChecker">Checker(s)</label>
+        <input type="text" id="emailChecker" value="Vipin Nair, Purushottam Nagla">
+      </div>
+      <div class="field-group stage-check">
+        <label for="chkGmailTo">Gmail draft: To (checkers' email addresses)</label>
+        <input type="text" id="chkGmailTo" value="vipinn@iima.ac.in, purushottamn@iima.ac.in" placeholder="comma-separated email addresses" autocomplete="off">
+      </div>
+      <div class="field-group stage-check">
+        <label for="chkGmailCc">Gmail draft: Cc (optional)</label>
+        <input type="text" id="chkGmailCc" value="" placeholder="comma-separated" autocomplete="off">
+      </div>
+      <div class="field-group stage-approve">
         <label for="emailTo">To (names shown in the email header)</label>
         <input type="text" id="emailTo" value="Amitkumar">
       </div>
-      <div class="field-group">
+      <div class="field-group stage-approve">
         <label for="emailSign">Signature name</label>
         <input type="text" id="emailSign" value="Vipin Nair">
       </div>
-      <div class="field-group">
+      <div class="field-group stage-approve">
         <label for="gmailTo">Gmail draft: To email addresses</label>
         <input type="text" id="gmailTo" value="amitkj@iima.ac.in" placeholder="comma-separated email addresses" autocomplete="off">
       </div>
-      <div class="field-group">
+      <div class="field-group stage-approve">
         <label for="gmailCc">Gmail draft: Cc</label>
         <input type="text" id="gmailCc" value="roshand@iima.ac.in, purushottamn@iima.ac.in, hetalc@iima.ac.in, neeraj@iima.ac.in, sanea@iima.ac.in, vipinn@iima.ac.in" placeholder="comma-separated" autocomplete="off">
       </div>
@@ -1073,6 +1119,7 @@
           <li><strong>Vendor Payment Report</strong> (.xlsx) — detected by sheet name "Vendor Invoice"</li>
           <li><strong>Expense Claim Report</strong> (.xlsx) — detected by sheet name "Expense Claim" or column "Employee Name"</li>
           <li><strong>Multiple files</strong> — select more than one file at once</li>
+          <li><strong>A Kotak TXT payment file</strong> (.txt) — opens in Generic mode so it can be checked before upload, exactly as it is. The checker uses this to verify the maker's file (see Maker and checker below).</li>
         </ul>
         <div class="help-tip">If you already have data loaded and upload another file, a popup asks:<br><strong>+ Add to existing</strong> = append new rows below current ones<br><strong>Replace all</strong> = clear everything and load only the new file<br>If you add the same file twice, the app warns you and flags the repeated payments as possible duplicates.</div>
         <p>The <strong>Filter: Workflow State</strong> setting ("To Pay only" or "All rows") applies to the next file you upload.</p>
@@ -1132,7 +1179,7 @@
           <dt><span class="help-tag help-tag-red">Error</span></dt>
           <dd>Download is disabled until fixed: empty Debit A/C, past date, invalid CC email, empty name, missing or invalid IFSC (must be 11 characters like HDFC0001234), empty account number, amount not a number or not more than 0, a row date that is not DD/MM/YYYY.</dd>
           <dt><span class="help-tag help-tag-orange">Warning</span></dt>
-          <dd>You can still download, after confirming: possible duplicate payment (same account, amount and invoice no), account number with letters or unusual length, amount with more than 2 decimals, invalid supplier/creator email.</dd>
+          <dd>You can still download, after confirming: possible duplicate payment (same account, amount and invoice no), account number with letters or unusual length, amount with more than 2 decimals, invalid supplier/creator email, Enrichment longer than the set maximum, a vendor whose bank account or IFSC changed since the last payment, an IFSC not found in the RBI list.</dd>
         </dl>
         <div class="help-tip">Problem cells are coloured red (error) or amber (warning). Hover a cell to see why. When everything passes, the panel turns green.</div>
       </div>
@@ -1153,7 +1200,13 @@
 
       <div class="help-section">
         <h3><span class="h-icon">&#x1F51F;</span> Email Approval Template</h3>
-        <p>After uploading, an approval email is auto-generated with a table of all payments. Use it to get payment approval from management.</p>
+        <p>After uploading, an approval email is auto-generated with a table of all payments. It follows the maker and checker process in two steps:</p>
+        <ol>
+          <li><strong>Step 1 · For checking:</strong> the maker (Hetal Chauhan) downloads the TXT and sends a "For Checking" email to the checkers (Vipin Nair, Purushottam Nagla). The email shows the <strong>batch code</strong> and "Prepared by".</li>
+          <li>The checker opens that downloaded TXT in this app (drop the .txt on the upload area). The batch code beside the row count must match the code in the email: any change to any payment gives a different code. The checks run on the file too.</li>
+          <li><strong>Step 2 · For final approval:</strong> the checker switches to Step 2 and sends the approval email to Amitkumar, with "Prepared by" and "Checked by" lines and the same batch code.</li>
+        </ol>
+        <p>Pick the step with the two buttons at the top of the panel. Maker and checker names, and each step's Gmail To and Cc, are remembered.</p>
         <ul>
           <li><strong>To</strong> and <strong>Signature name</strong> are editable at the top of the panel and are remembered.</li>
           <li><strong>&#x2709; Draft in Gmail</strong> — opens a new Gmail draft with the To and Cc addresses and the subject filled in, and copies the formatted email (with the payment table) to your clipboard. Gmail cannot receive a table through a link, so you paste it: in the draft, <strong>triple-click</strong> the line "Triple-click this line…" and press <strong>Ctrl+V</strong> (&#x2318;V on Mac). The full email with the table replaces that line. Attach the Excel if needed, then send. Gmail keeps it in Drafts until you send it.</li>
@@ -1180,6 +1233,18 @@
           <dd>Client code, product code, bank code, CC emails, workflow filter, Debit A/C (per fund type), email To and signature are saved <strong>in this browser only</strong>. They are not shared with anyone else.</dd>
           <dt>&#8634; Restore defaults</dt>
           <dd>The link in the Payment Configuration heading puts all saved settings back to the original defaults.</dd>
+        </dl>
+      </div>
+
+      <div class="help-section">
+        <h3><span class="h-icon">&#x1F6E1;&#xFE0F;</span> Enrichment, Vendor Memory and IFSC Lookup</h3>
+        <dl class="help-grid">
+          <dt>Enrichment length</dt>
+          <dd>The payment advice shows only part of a long Enrichment. Enrichment-2 now starts from the cleaned purpose ("Being" and the TDS part removed) and common words are shortened until it fits ("Financial Assistance" → "Fin Asst", "Reimbursement" → "Reimb", "September" → "Sep"). Anything still longer than <strong>Enrichment max length</strong> (Payment Configuration, 30 by default) gets a warning. Set the maximum to Kotak's limit, or to where your advice was cut off.</dd>
+          <dt>Vendor memory</dt>
+          <dd>After every download, this browser remembers each vendor's account number and IFSC. If a later payment to the same vendor has a different account or IFSC, the row is flagged: confirm the change with the vendor by phone before paying, as changed bank details are a common fraud. Each browser keeps its own memory; <strong>Clear vendor memory</strong> in Payment Configuration resets it.</dd>
+          <dt>IFSC lookup</dt>
+          <dd>Each IFSC is looked up in the public RBI IFSC list (via ifsc.razorpay.com; only the IFSC code is sent). Hover an IFSC cell to see its bank and branch. An IFSC that doesn't exist is flagged. If the lookup service can't be reached, the app carries on without it.</dd>
         </dl>
       </div>
 
@@ -1296,7 +1361,7 @@ function setMode(mode) {
       configPanel.style.display = 'none';
     }
     document.getElementById('uploadTitle').textContent = 'Drop any Kotak-format Excel file here';
-    document.getElementById('uploadSub').innerHTML = 'or click to browse · any .xls or .xlsx with Kotak payment columns';
+    document.getElementById('uploadSub').innerHTML = 'or click to browse · any .xls or .xlsx with Kotak payment columns, or a Kotak .txt payment file to check it';
   } else {
     genericPanel.classList.remove('visible');
     fcraSelector.style.display = '';
@@ -1506,6 +1571,13 @@ var loadedFiles  = []; // track loaded files {name, type, count}
 function processFile(file) {
   fileName = file.name.replace(/\.[^.]+$/,'');
 
+  // A Kotak TXT is checked in Generic mode (e.g. the checker verifying the maker's file)
+  if (/\.txt$/i.test(file.name)) {
+    if (currentMode !== 'generic') setMode('generic');
+    readKotakTxt(file);
+    return;
+  }
+
   if (currentMode === 'generic') {
     readAndProcess(file, false);
     return;
@@ -1670,7 +1742,11 @@ function processGeneric(wb) {
     return fields.join('~');
   });
 
-  // Show generic results
+  showGenericRows(lines, numCols);
+}
+
+// Show Generic-mode rows (from an Excel or a Kotak TXT) and run the checks
+function showGenericRows(lines, numCols) {
   document.getElementById('rowCount').textContent = genericRows.length + ' rows';
   document.getElementById('previewPanel').classList.add('visible');
   document.getElementById('actions').classList.add('visible');
@@ -1690,6 +1766,23 @@ function processGeneric(wb) {
   refreshGeneric();
 
   showToast('Loaded ' + genericRows.length + ' rows (Generic mode)');
+}
+
+// A Kotak TXT opened in Generic mode is kept exactly as it is, so its batch
+// code matches the one the maker's email shows only if the file is unchanged
+function readKotakTxt(file) {
+  setProgress(30);
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var lines = String(e.target.result).split(/\r?\n/).filter(function(l){ return l.trim() !== ''; });
+    if (lines.length && /^client_code~/i.test(lines[0])) lines.shift();
+    if (!lines.length) { showToast('No data rows found', 'error'); setProgress(0); return; }
+    genericRows = lines.map(function(l){ return l.split('~'); });
+    showGenericRows(lines, Math.max.apply(null, genericRows.map(function(r){ return r.length; })));
+    setProgress(100);
+  };
+  reader.onerror = function(){ showToast('Could not read ' + file.name, 'error'); setProgress(0); };
+  reader.readAsText(file);
 }
 
 function formatCellValue(val) {
@@ -1889,7 +1982,7 @@ function defaultValue(r, f, cfg) {
     case 'date':   return cfg.payDate;
     case 'debit':  var pd = projectDebitFor(r); return pd ? pd.account.trim() : cfg.debitAc;
     case 'enr1':   return getEnr1(r);
-    case 'enr2':   return sanitize(r.purpose);
+    case 'enr2':   return defaultEnr2(r);
   }
   return '';
 }
@@ -1963,6 +2056,7 @@ function todayMidnight() {
 // Returns { global: [...], rows: {rowIndex: [...]}, errors, warnings }.
 // Each issue is {level: 'error'|'warn', field, msg}. Errors block download.
 function validateAll() {
+  ifscWanted = [];
   var cfg   = getConfig();
   var today = todayMidnight();
   var v     = { global: [], rows: {}, errors: 0, warnings: 0 };
@@ -2025,6 +2119,17 @@ function validateAll() {
       else if (!/^\d+$/.test(e.debit)) rowAdd(i, 'debit', 'warn', 'Debit A/C contains characters other than digits');
     }
 
+    var mx = enrMax();
+    if (e.enr1.length > mx) rowAdd(i, 'enr1', 'warn', 'Enrichment-1 is ' + e.enr1.length + ' characters; the payment advice may show only the first ' + mx);
+    if (e.enr2.length > mx) rowAdd(i, 'enr2', 'warn', 'Enrichment-2 is ' + e.enr2.length + ' characters; the payment advice may show only the first ' + mx + '. Shorten it');
+    var moved = vendorChange(e.name, e.accNo, e.ifsc);
+    if (moved) rowAdd(i, 'accNo', 'warn', vendorChangeMsg(moved));
+    if (e.pmtType !== 'IFT') {
+      var ii = ifscCache[e.ifsc];
+      if (ii && ii.missing) rowAdd(i, 'ifsc', 'warn', 'IFSC ' + e.ifsc + ' was not found in the RBI IFSC list — check it with the vendor');
+      ifscWanted.push(e.ifsc);
+    }
+
     e.emails.split(',').forEach(function(addr){
       if (addr && !isValidEmail(addr)) rowAdd(i, 'emails', 'warn', 'Email "' + addr + '" looks invalid');
     });
@@ -2057,7 +2162,7 @@ function applyValidation(v) {
       el.classList.toggle('cell-error', lvl === 'error');
       el.classList.toggle('cell-warn',  lvl === 'warn');
       el.title = mine.length ? mine.map(function(x){ return x.msg; }).join('\n')
-                             : (el.getAttribute('data-tip') || el.value);
+                             : (el.getAttribute('data-tip') || (f === 'ifsc' && ifscLabel(el.value)) || el.value);
     });
     var tr = document.getElementById('row' + i);
     if (tr) tr.classList.toggle('row-dup', issues.some(function(x){ return x.field === 'dup'; }));
@@ -2070,6 +2175,196 @@ function applyValidation(v) {
       badge.title = 'Beneficiary emails (' + list.length + '):\n' + list.join('\n') +
         (bad.length ? '\n\n' + bad.map(function(x){ return x.msg; }).join('\n') : '');
     }
+  });
+}
+
+// ─── Enrichment length ───────────────────────────────────────────────────────
+// The payment advice shows only part of a long enrichment, so Enrichment-2
+// starts from the cleaned purpose and common words are shortened until it fits.
+var ENR_ABBR = [
+  [/\bfor the month of\b/gi, 'for'], [/\bfinancial assistance\b/gi, 'Fin Asst'], [/\breimbursement\b/gi, 'Reimb'],
+  [/\bprofessional\b/gi, 'Prof'], [/\bassistance\b/gi, 'Asst'], [/\bpayments?\b/gi, 'Pmt'], [/\btowards\b/gi, 'for'],
+  [/\bcharges\b/gi, 'Chgs'], [/\bservices\b/gi, 'Svcs'], [/\bmanagement\b/gi, 'Mgmt'], [/\bdevelopment\b/gi, 'Dev'],
+  [/\bprogramme\b/gi, 'Prog'], [/\bconsultancy\b/gi, 'Consult'], [/\bconsulting\b/gi, 'Consult'],
+  [/\bexpenses\b/gi, 'Exp'], [/\binvoice\b/gi, 'Inv'], [/\bagainst\b/gi, 'agst'], [/\badvance\b/gi, 'Adv'],
+  [/\bjanuary\b/gi, 'Jan'], [/\bfebruary\b/gi, 'Feb'], [/\baugust\b/gi, 'Aug'], [/\bseptember\b/gi, 'Sep'],
+  [/\boctober\b/gi, 'Oct'], [/\bnovember\b/gi, 'Nov'], [/\bdecember\b/gi, 'Dec'],
+];
+
+function enrMax() {
+  var n = parseInt(document.getElementById('cfgEnrMax').value, 10);
+  return n >= 5 ? n : 30;
+}
+
+function shortenEnrichment(text, max) {
+  var s = String(text || '').replace(/\s+/g, ' ').trim();
+  for (var k = 0; k < ENR_ABBR.length && s.length > max; k++) s = s.replace(ENR_ABBR[k][0], ENR_ABBR[k][1]);
+  return s;
+}
+
+function defaultEnr2(r) {
+  var cleaned = sanitize(cleanPurpose(r.purpose)) || sanitize(r.purpose);
+  return shortenEnrichment(cleaned, enrMax());
+}
+
+// ─── Batch code (maker/checker) ──────────────────────────────────────────────
+// A fingerprint of the exact bank file: any change to any field of any row
+// gives a different code. Not a security hash, just a quick match check.
+function fnv1a(str, seed) {
+  var h = seed >>> 0;
+  for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+
+function batchCodeOf(lines) {
+  if (!lines || !lines.length) return '';
+  var text = lines.join('\n');
+  var hex = function(n){ return ('00000000' + n.toString(16).toUpperCase()).slice(-8); };
+  return hex(fnv1a(text, 2166136261)).slice(0, 4) + '-' + hex(fnv1a(text, 0x9747b28c)).slice(0, 4);
+}
+
+function currentBatchCode() {
+  return batchCodeOf(currentMode === 'generic' ? (genericRows && genericRows._txtLines) : buildTxtLines());
+}
+
+// ─── Email steps: 1 maker -> checkers, 2 checker -> approver ─────────────────
+function emailStage() {
+  return document.getElementById('emailStage').value === 'approve' ? 'approve' : 'check';
+}
+
+function gmailFieldIds() {
+  return emailStage() === 'check' ? { to: 'chkGmailTo', cc: 'chkGmailCc' } : { to: 'gmailTo', cc: 'gmailCc' };
+}
+
+function applyEmailStage() {
+  var st = emailStage();
+  document.getElementById('emailTemplatePanel').setAttribute('data-stage', st);
+  Array.prototype.forEach.call(document.querySelectorAll('.stage-btn'), function(b){
+    var on = b.getAttribute('data-stage') === st;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+document.querySelector('.stage-switch').addEventListener('click', function(ev){
+  var b = ev.target.closest('.stage-btn');
+  if (!b) return;
+  document.getElementById('emailStage').value = b.getAttribute('data-stage');
+  saveSettings();
+  showGmailSteps(false);
+  applyEmailStage();
+  renderEmailTemplate();
+});
+
+// Batch code and who prepared / checked, as plain lines for every email form
+function signoffLines(m) {
+  var out = ['Batch code: ' + m.batch];
+  if (m.maker) out.push('Prepared by: ' + m.maker + ' (Maker)');
+  if (m.stage === 'approve' && m.checker) out.push('Checked by: ' + m.checker + ' (Checker)');
+  return out;
+}
+
+function signoffLinesHtml(m) {
+  return '<p style="color:var(--text2);">' + signoffLines(m).map(esc).join('<br>') + '</p>';
+}
+
+// ─── Vendor bank memory (this browser) ───────────────────────────────────────
+// After each download every vendor's account and IFSC are remembered; a later
+// payment to the same vendor with different bank details is flagged.
+var VENDOR_KEY = 'kotakPayConverter.vendors';
+var vendorMem  = loadVendorMem();
+
+function loadVendorMem() {
+  try { return JSON.parse(localStorage.getItem(VENDOR_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+
+function vendorKey(name) {
+  return String(name || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+}
+
+function vendorChange(name, acc, ifsc) {
+  var m = vendorMem[vendorKey(name)];
+  if (!m || !acc || (m.acc === acc && m.ifsc === ifsc)) return null;
+  return m;
+}
+
+function vendorChangeMsg(m) {
+  return 'Bank details changed for this vendor: last paid to A/C ' + m.acc + ' (IFSC ' + m.ifsc + ') on ' + m.last +
+    '. Confirm the new account with the vendor by phone before paying';
+}
+
+function rememberVendors() {
+  var cfg  = getConfig();
+  var list = currentMode === 'generic'
+    ? genericLines().map(function(f){
+        return { name: String(f[10] || '').trim(), acc: String(f[13] || '').trim(), ifsc: String(f[12] || '').trim().toUpperCase(), date: String(f[4] || '').trim() };
+      })
+    : parsedRows.map(function(r){
+        var e = effRow(r, cfg);
+        return { name: e.name, acc: e.accNo, ifsc: e.ifsc, date: e.date };
+      });
+  list.forEach(function(v){
+    if (!v.name || !v.acc) return;
+    vendorMem[vendorKey(v.name)] = { name: v.name, acc: v.acc, ifsc: v.ifsc, last: v.date };
+  });
+  try { localStorage.setItem(VENDOR_KEY, JSON.stringify(vendorMem)); } catch (e) {}
+  renderVendorMemInfo();
+}
+
+function renderVendorMemInfo() {
+  var n = Object.keys(vendorMem).length;
+  document.getElementById('vendorMemInfo').textContent = n
+    ? plural(n, 'vendor') + ' remembered in this browser. A later payment to one of them with a different account or IFSC is flagged.'
+    : 'Nothing remembered yet. After each download, this browser remembers every vendor’s account and IFSC and flags any later change.';
+}
+
+document.getElementById('clearVendorMem').addEventListener('click', function(){
+  if (!window.confirm('Forget the bank details of all ' + Object.keys(vendorMem).length + ' remembered vendors?')) return;
+  vendorMem = {};
+  try { localStorage.removeItem(VENDOR_KEY); } catch (e) {}
+  renderVendorMemInfo();
+  onConfigChange();
+  showToast('Vendor memory cleared');
+});
+
+// ─── IFSC lookup ─────────────────────────────────────────────────────────────
+// Bank and branch for each IFSC from the public Razorpay IFSC service (only the
+// IFSC code is sent). Results are cached; if the service can't be reached the
+// app carries on without it.
+var IFSC_KEY    = 'kotakPayConverter.ifsc';
+var IFSC_API    = 'https://ifsc.razorpay.com/';
+var ifscCache   = loadIfscCache();
+var ifscPending = {};
+var ifscWanted  = [];
+
+function loadIfscCache() {
+  try { return JSON.parse(localStorage.getItem(IFSC_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+
+function ifscLabel(code) {
+  var i = ifscCache[String(code || '').trim().toUpperCase()];
+  if (!i || i.missing) return '';
+  return [i.bank, i.branch, i.city].filter(Boolean).join(', ');
+}
+
+function lookupIfscs(codes) {
+  var todo = distinct(codes.filter(function(c){ return IFSC_RE.test(c) && !ifscCache[c] && !ifscPending[c]; }));
+  if (!todo.length || !window.fetch) return;
+  Promise.all(todo.map(function(c){
+    ifscPending[c] = true;   // stays set after a failure, so an unreachable service is not retried in a loop
+    return fetch(IFSC_API + c).then(function(res){
+      if (res.status === 404) { ifscCache[c] = { missing: true }; return; }
+      if (!res.ok) return;
+      return res.json().then(function(j){
+        ifscCache[c] = { bank: j.BANK || '', branch: j.BRANCH || '', city: j.CITY || '' };
+      });
+    }).catch(function(){});
+  })).then(function(){
+    try { localStorage.setItem(IFSC_KEY, JSON.stringify(ifscCache)); } catch (e) {}
+    if (currentMode === 'erp' && parsedRows.length) refreshDerived();
+    else if (currentMode === 'generic' && genericLines().length) refreshGeneric();
   });
 }
 
@@ -2100,6 +2395,7 @@ function genericLines() {
 }
 
 function validateGeneric() {
+  ifscWanted = [];
   var v = { global: [], rows: {}, errors: 0, warnings: 0 };
   var lines = genericLines();
   if (!lines.length) return v;
@@ -2133,6 +2429,16 @@ function validateGeneric() {
     if (!IFSC_RE.test(ifsc)) rowAdd(i, 'ifsc', 'error', 'IFSC "' + f[12] + '" is not valid (11 characters, e.g. HDFC0001234)');
     if (!acc) rowAdd(i, 'accNo', 'error', 'Beneficiary account number is empty');
     else if (!/^\d+$/.test(acc)) rowAdd(i, 'accNo', 'warn', 'Beneficiary account number contains letters or symbols');
+    var mx = enrMax(), e1 = String(f[29] || ''), e2 = String(f[30] || '');
+    if (e1.length > mx) rowAdd(i, 'enr1', 'warn', 'Enrichment-1 is ' + e1.length + ' characters; the payment advice may show only the first ' + mx);
+    if (e2.length > mx) rowAdd(i, 'enr2', 'warn', 'Enrichment-2 is ' + e2.length + ' characters; the payment advice may show only the first ' + mx);
+    var moved = vendorChange(name, acc, ifsc);
+    if (moved) rowAdd(i, 'accNo', 'warn', vendorChangeMsg(moved));
+    if (pmt !== 'IFT' && IFSC_RE.test(ifsc)) {
+      var ii = ifscCache[ifsc];
+      if (ii && ii.missing) rowAdd(i, 'ifsc', 'warn', 'IFSC ' + ifsc + ' was not found in the RBI IFSC list — check it with the vendor');
+      ifscWanted.push(ifsc);
+    }
     if (acc && !isNaN(amount)) {
       var key = acc + '|' + amount.toFixed(2) + '|' + String(f[29] || '').toUpperCase();
       if (seen[key] !== undefined) rowAdd(i, 'dup', 'warn', 'Possible duplicate of row ' + (seen[key] + 1) + ' (same account, amount and enrichment)');
@@ -2149,6 +2455,8 @@ function refreshGeneric() {
   var lines = genericLines();
   var total = lines.reduce(function(s, f){ var a = parseAmount(f[7]); return s + (isNaN(a) ? 0 : a); }, 0);
   document.getElementById('sumAmount').textContent = lines.length ? fmtAmt(total) : '—';
+  document.getElementById('batchBadge').textContent = lines.length ? 'Batch ' + currentBatchCode() : '';
+  lookupIfscs(ifscWanted);
   return v;
 }
 
@@ -2308,6 +2616,8 @@ function refreshDerived() {
   renderTxtPreview();
   updateDownloadState(v);
   document.getElementById('rowCount').textContent = plural(parsedRows.length, 'row');
+  document.getElementById('batchBadge').textContent = parsedRows.length ? 'Batch ' + currentBatchCode() : '';
+  lookupIfscs(ifscWanted);
   document.getElementById('editBadge').classList.toggle('visible', hasEdits());
   return v;
 }
@@ -2463,6 +2773,9 @@ function emailData() {
   });
   var total    = rows.reduce(function(s, x){ return s + x.amount; }, 0);
   var letterNo = cfg.letterNo.padStart(2,'0');
+  var stage    = emailStage();
+  var maker    = document.getElementById('emailMaker').value.trim();
+  var checker  = document.getElementById('emailChecker').value.trim();
   var payDisp  = String(d.getDate()).padStart(2,'0') + '-' +
                  String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear();
   return {
@@ -2472,9 +2785,15 @@ function emailData() {
     rows:     rows,
     total:    total,
     totalFmt: fmtINR(total),
-    subject:  'Payment Letter ' + cfg.fundType + ' No ' + letterNo + ' Date ' + payDisp + ' Rs ' + fmtINR(total) + '/-',
-    to:       document.getElementById('emailTo').value.trim(),
-    sign:     document.getElementById('emailSign').value.trim(),
+    stage:    stage,
+    batch:    currentBatchCode(),
+    maker:    maker,
+    checker:  checker,
+    verb:     stage === 'check' ? 'check' : 'approve',
+    subject:  (stage === 'check' ? 'For Checking: ' : '') +
+              'Payment Letter ' + cfg.fundType + ' No ' + letterNo + ' Date ' + payDisp + ' Rs ' + fmtINR(total) + '/-',
+    to:       stage === 'check' ? checker : document.getElementById('emailTo').value.trim(),
+    sign:     stage === 'check' ? maker : document.getElementById('emailSign').value.trim(),
   };
 }
 
@@ -2486,7 +2805,8 @@ function renderEmailTemplate() {
   document.getElementById('emailSubject').textContent   = m.subject;
   document.getElementById('emailToPreview').textContent = m.to || '—';
   document.getElementById('emailCcPreview').textContent =
-    splitEmails(document.getElementById('gmailCc').value).join(', ') || '—';
+    splitEmails(document.getElementById(gmailFieldIds().cc).value).join(', ') || '—';
+  applyEmailStage();
 
   var tblStyle = 'width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px;margin:10px 0;';
   var thStyle  = 'padding:8px 12px;background:var(--surface2);border:1px solid var(--border);text-align:left;font-size:10px;letter-spacing:0.08em;color:var(--text2);';
@@ -2521,8 +2841,9 @@ function renderEmailTemplate() {
   document.getElementById('emailBody').innerHTML =
     '<div style="font-family:var(--sans);font-size:13px;line-height:1.8;color:var(--text);">' +
     '<p>Dear Sir,</p><br>' +
-    '<p>Please approve below <strong>' + esc(m.fundType) + '</strong> payments</p>' +
-    '<p><strong>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</strong></p><br>' +
+    '<p>Please ' + m.verb + ' below <strong>' + esc(m.fundType) + '</strong> payments</p>' +
+    '<p><strong>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</strong></p>' +
+    signoffLinesHtml(m) + '<br>' +
     '<table style="' + tblStyle + '">' + headerRow + dataRows + totalRow + '</table>' +
     '<br><p>Thanks &amp; Regards,<br>' + esc(m.sign) + '</p>' +
     '</div>';
@@ -2538,8 +2859,9 @@ function emailPlainText(m, withSubject, withSign) {
   }
   lines.push('Dear Sir,');
   lines.push('');
-  lines.push('Please approve below ' + m.fundType + ' payments');
+  lines.push('Please ' + m.verb + ' below ' + m.fundType + ' payments');
   lines.push(m.fundType + ' Letter No ' + m.letterNo);
+  signoffLines(m).forEach(function(l){ lines.push(l); });
   lines.push('');
   lines.push('Vendor\t\tAmount\t\tProject\t\tPurpose');
   lines.push(Array(120).join('-'));
@@ -2566,10 +2888,11 @@ function downloadEmailXls() {
   var m = emailData();
   var wsData = [
     [m.fundType + ' Letter No ' + m.letterNo],
-    ['Date: ' + m.payDisp],
+    ['Date: ' + m.payDisp]
+  ].concat(signoffLines(m).map(function(l){ return [l]; })).concat([
     [],
     ['#', 'Vendor', 'Amount (Rs)', 'Project', 'Purpose']
-  ];
+  ]);
   m.rows.forEach(function(x, i){
     wsData.push([i + 1, x.name, x.amount, x.project, x.purposeRaw]);
   });
@@ -2619,8 +2942,9 @@ function emailHtmlForGmail(m, withSign) {
   }).join('');
   return '<div style="' + font + '">' +
     '<p>Dear Sir,</p>' +
-    '<p>Please approve below <b>' + esc(m.fundType) + '</b> payments</p>' +
-    '<p><b>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</b></p>' +
+    '<p>Please ' + m.verb + ' below <b>' + esc(m.fundType) + '</b> payments</p>' +
+    '<p><b>' + esc(m.fundType) + ' Letter No ' + esc(m.letterNo) + '</b><br>' +
+    signoffLines(m).map(esc).join('<br>') + '</p>' +
     '<table style="border-collapse:collapse;' + font + '">' +
       '<tr><th style="' + head + '">#</th><th style="' + head + '">Vendor</th>' +
       '<th style="' + head + 'text-align:right;">Amount (Rs)</th><th style="' + head + '">Project</th>' +
@@ -2660,12 +2984,13 @@ function showGmailSteps(show) {
 
 function draftInGmail() {
   var m  = emailData();
-  var to = splitEmails(document.getElementById('gmailTo').value);
-  var cc = splitEmails(document.getElementById('gmailCc').value);
+  var ids = gmailFieldIds();
+  var to = splitEmails(document.getElementById(ids.to).value);
+  var cc = splitEmails(document.getElementById(ids.cc).value);
   var account = document.getElementById('gmailAccount').value.trim();
   var bad = to.concat(cc).filter(function(e){ return !isValidEmail(e); });
   if (account && !isValidEmail(account)) bad.push(account);
-  ['gmailTo','gmailCc','gmailAccount'].forEach(function(id){
+  [ids.to, ids.cc, 'gmailAccount'].forEach(function(id){
     var el = document.getElementById(id);
     el.classList.toggle('field-invalid', splitEmails(el.value).some(function(e){ return !isValidEmail(e); }));
   });
@@ -2780,6 +3105,7 @@ function downloadTxt() {
 }
 
 function doDownload(kind) {
+  rememberVendors();
   if (kind === 'xls' || kind === 'both') downloadXls();
   if (kind === 'txt') downloadTxt();
   if (kind === 'both') setTimeout(downloadTxt, 500);
@@ -2834,6 +3160,7 @@ function openConfirm(kind, v) {
                       }).join('\n')],
     ['Payment date',  dates.length === 1 ? dates[0] : dates.length + ' different: ' + dates.join(', ')],
     ['Payment types', types],
+    ['Batch code',    currentBatchCode()],
     ['File',          { xls: 'Kotak XLS', txt: 'Kotak TXT', both: 'Kotak XLS + TXT' }[kind]],
   ];
   document.getElementById('confirmGrid').innerHTML = items.map(function(it){
@@ -2895,6 +3222,7 @@ function resetAll() {
   document.getElementById('editBadge').classList.remove('visible');
   document.querySelector('#previewPanel thead tr').innerHTML = ERP_THEAD;
   updateDownloadState(null);
+  document.getElementById('batchBadge').textContent = '';
 }
 
 // Refresh: clear all manual cell edits, re-render with current config
@@ -2989,7 +3317,8 @@ ccInput.addEventListener('paste', function(e){
 // ─── Saved settings (this browser only) ──────────────────────────────────────
 var SETTINGS_KEY = 'kotakPayConverter.settings';
 var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign',
-                    'gmailTo','gmailCc','gmailAccount','gmailSignOff','cfgExtraDebits'];
+                    'gmailTo','gmailCc','gmailAccount','gmailSignOff','cfgExtraDebits',
+                    'cfgEnrMax','emailMaker','emailChecker','chkGmailTo','chkGmailCc','emailStage'];
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
@@ -3143,10 +3472,12 @@ function onConfigChange() {
 
 ['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
  'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount','gmailSignOff',
- 'cfgExtraDebits'].forEach(function(id){
+ 'cfgExtraDebits','cfgEnrMax','emailMaker','emailChecker','chkGmailTo','chkGmailCc'].forEach(function(id){
   document.getElementById(id).addEventListener('input', function(){
     if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
-    if (id.indexOf('gmail') === 0) {
+    if (id === 'emailMaker' || id === 'emailChecker') {
+      renderEmailTemplate();
+    } else if (id.indexOf('gmail') === 0 || id.indexOf('chkGmail') === 0) {
       document.getElementById(id).classList.remove('field-invalid');
       renderEmailTemplate();
     } else if (id === 'cfgLetterNo' || id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
@@ -3156,6 +3487,8 @@ function onConfigChange() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 applySettings();
+applyEmailStage();
+renderVendorMemInfo();
 document.getElementById('cfgPayDate').value = todayStr();
 setFcra(false);
 checkDateAlert();
