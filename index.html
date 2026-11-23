@@ -701,7 +701,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.10</div>
+    <div class="badge">v1.11</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -764,7 +764,7 @@
         <div class="mode-opt-icon">📄</div>
         <div>
           <div class="mode-opt-title">Generic Mode <span class="mode-badge">KMBL</span></div>
-          <div class="mode-opt-sub">Upload any pre-formatted Kotak XLS · reads columns as-is, auto date formatting, outputs TXT directly</div>
+          <div class="mode-opt-sub">Upload any pre-formatted Kotak XLS · reads columns as-is, checks every row, outputs TXT</div>
         </div>
       </div>
     </div>
@@ -791,7 +791,7 @@
       </div>
     </div>
     <div style="margin-top:14px;padding:10px 14px;background:var(--accent-light);border-radius:8px;font-family:var(--sans);font-size:11px;color:var(--accent);">
-      ℹ Reads each row as tilde-delimited fields. Date cells auto-formatted to DD/MM/YYYY. No field mapping or sanitization applied.
+      ℹ Reads each row as tilde-delimited fields. Date cells auto-formatted to DD/MM/YYYY. No field mapping or sanitization; every row is checked (debit account, date, amount, IFSC, account) before download.
     </div>
   </div>
 
@@ -847,6 +847,11 @@
         <div id="projDebits"></div>
         <div><button type="button" class="settings-reset" id="addProjDebit">+ Add project</button></div>
         <div class="field-help">Each payment's project comes from its ERP cost center (e.g. "SAP - NFC: Main" is SAP). A listed project fills its own debit account; all other Non-FCRA projects use the Debit A/C above. Not used for FCRA.</div>
+      </div>
+      <div class="field-group full">
+        <label for="cfgExtraDebits">Other approved debit accounts (optional)</label>
+        <input type="text" id="cfgExtraDebits" value="" placeholder="comma-separated, only genuine CIIE accounts" inputmode="numeric" autocomplete="off">
+        <div class="field-help">Downloads are blocked unless every Debit A/C is a known CIIE account: 0711160987, 4812763856 and the project accounts above. Add any other genuine CIIE debit account here.</div>
       </div>
       <div class="field-group">
         <label for="cfgFilter">Filter: Workflow State</label>
@@ -1051,7 +1056,7 @@
         <p>When you open the app, you see two mode options at the top:</p>
         <ul>
           <li><span class="help-tag help-tag-blue">ERP MODE</span> — Use this when you have an <strong>ERPNext Vendor Payment Report</strong> or <strong>Expense Claim Report</strong>. The app reads the columns, maps them to Kotak format, checks every row, and lets you edit before downloading.</li>
-          <li><span class="help-tag help-tag-orange">GENERIC MODE</span> — Use this when you already have a <strong>pre-formatted Kotak Excel file</strong> (like the one made by the old KMBL Excel tool). It just converts the columns to a tilde-separated TXT file. No field mapping and no checks.</li>
+          <li><span class="help-tag help-tag-orange">GENERIC MODE</span> — Use this when you already have a <strong>pre-formatted Kotak Excel file</strong> (like the one made by the old KMBL Excel tool). It converts the columns to a tilde-separated TXT file without changing them, then checks each row before download: payment type, date, Debit A/C (must be a known CIIE account), amount, beneficiary name, IFSC and account number, plus possible duplicates. Errors block the download, and a confirmation box shows the totals per debit account.</li>
         </ul>
       </div>
 
@@ -1084,7 +1089,7 @@
       <div class="help-section">
         <h3><span class="h-icon">5&#xFE0F;&#x20E3;</span> Fill the Debit Account <span class="req">*</span></h3>
         <p>The Debit A/C is filled in for you from the fund type — <strong>Non-FCRA 0711160987</strong>, <strong>FCRA 4812763856</strong> — and goes into every row. If you change it, your value is remembered for that fund type; <strong>Restore default settings</strong> brings back these accounts.</p>
-        <div class="help-tip">If you edit one row's Debit A/C in the table, that row keeps your value even if you change the configuration later. Download stays disabled while the Debit A/C is empty.</div>
+        <div class="help-tip">If you edit one row's Debit A/C in the table, that row keeps your value even if you change the configuration later. Download stays disabled while the Debit A/C is empty, or if it is not a known CIIE account (0711160987, 4812763856 or a project account). A genuine new CIIE account can be added under <strong>Other approved debit accounts</strong>.</div>
         <p><strong>Non-FCRA project accounts:</strong> some projects pay from their own account. Each payment's project is read from its ERP cost center (for example "SAP - NFC: Main" is SAP), and a listed project fills its own debit account in that row, shown in violet:</p>
         <dl class="help-grid">
           <dt>SAP</dt><dd>4849983128</dd>
@@ -1185,6 +1190,7 @@
           <li><span class="help-tag help-tag-red">Special Characters</span> — Only A-Z, 0-9, space, / and - are allowed in text fields. The app auto-strips everything else, including in cells you edit.</li>
           <li><span class="help-tag help-tag-red">Wrong IFSC</span> — IFT rows must use KKBK0000958 (handled automatically). NEFT IFSCs are checked for the correct 11-character format.</li>
           <li><span class="help-tag help-tag-red">Empty Debit A/C</span> — The app blocks download until it is filled.</li>
+          <li><span class="help-tag help-tag-red">Invalid Package Account Combination</span> — The Debit A/C is not a CIIE account set up for bulk payments (for example "3850"). The app now blocks any debit account that is not a known CIIE account, in both ERP and Generic mode, and spots a missing leading zero.</li>
           <li><span class="help-tag help-tag-red">Leading zeros</span> — Bank accounts starting with 0 (e.g. 00123456) must keep the zeros. The app preserves them.</li>
         </ul>
       </div>
@@ -1681,7 +1687,7 @@ function processGeneric(wb) {
   document.getElementById('sumTds2').textContent    = '—';
   document.getElementById('sumTdsRows').textContent = '—';
   document.getElementById('summaryBar').classList.add('visible');
-  updateDownloadState(null);
+  refreshGeneric();
 
   showToast('Loaded ' + genericRows.length + ' rows (Generic mode)');
 }
@@ -1973,6 +1979,8 @@ function validateAll() {
   var usesCfgDebit = parsedRows.some(function(r){ return !isEdited(r, 'debit') && !projectDebitFor(r); });
   if (usesCfgDebit && !cfg.debitAc) {
     add(v.global, 'error', 'debit', 'Debit A/C is empty — enter it in Payment Configuration');
+  } else if (usesCfgDebit && !isKnownDebit(cfg.debitAc)) {
+    add(v.global, 'error', 'debit', unknownDebitMsg(cfg.debitAc));
   } else if (usesCfgDebit && !/^\d+$/.test(cfg.debitAc)) {
     add(v.global, 'warn', 'debit', 'Debit A/C "' + cfg.debitAc + '" contains characters other than digits');
   }
@@ -2013,6 +2021,7 @@ function validateAll() {
     }
     if (isEdited(r, 'debit')) {
       if (!e.debit) rowAdd(i, 'debit', 'error', 'Debit A/C is empty');
+      else if (!isKnownDebit(e.debit)) rowAdd(i, 'debit', 'error', unknownDebitMsg(e.debit));
       else if (!/^\d+$/.test(e.debit)) rowAdd(i, 'debit', 'warn', 'Debit A/C contains characters other than digits');
     }
 
@@ -2064,18 +2073,98 @@ function applyValidation(v) {
   });
 }
 
+// ─── Known debit accounts ────────────────────────────────────────────────────
+// A Debit A/C must be one of CIIE's own accounts. A wrong one (e.g. "3850")
+// is rejected by Kotak as "Invalid Package Account Combination".
+function knownDebits() {
+  var list = [DEFAULT_DEBIT.debit_NonFCRA, DEFAULT_DEBIT.debit_FCRA];
+  projectDebits.forEach(function(e){ list.push(e.account); });
+  String(document.getElementById('cfgExtraDebits').value || '').split(/[\s,;]+/).forEach(function(a){ list.push(a); });
+  return list.map(function(a){ return String(a || '').trim(); }).filter(Boolean);
+}
+
+function isKnownDebit(acc) {
+  return knownDebits().indexOf(String(acc || '').trim()) >= 0;
+}
+
+function unknownDebitMsg(acc) {
+  acc = String(acc || '').trim();
+  if (isKnownDebit('0' + acc)) return 'Debit A/C "' + acc + '" is missing its leading zero (should be 0' + acc + ')';
+  return 'Debit A/C "' + acc + '" is not a known CIIE debit account — Kotak will reject it (Invalid Package Account Combination). ' +
+    'If it is a genuine CIIE account, add it under Other approved debit accounts';
+}
+
+// ─── Generic mode checks (the pre-formatted Kotak file as it will be uploaded) ─
+function genericLines() {
+  return (genericRows && genericRows._txtLines || []).map(function(l){ return l.split('~'); });
+}
+
+function validateGeneric() {
+  var v = { global: [], rows: {}, errors: 0, warnings: 0 };
+  var lines = genericLines();
+  if (!lines.length) return v;
+  function rowAdd(i, field, level, msg) {
+    v.rows[i] = v.rows[i] || [];
+    v.rows[i].push({ level: level, field: field, msg: msg });
+    if (level === 'error') v.errors++; else v.warnings++;
+  }
+  if (lines[0].length < 14) {
+    v.global.push({ level: 'error', field: '', msg: 'Each row has only ' + lines[0].length + ' columns; a Kotak payment row has 49. Check Number of Columns and Header Row.' });
+    v.errors++;
+    return v;
+  }
+  var today = todayMidnight();
+  var seen  = {};
+  lines.forEach(function(f, i){
+    var pmt = String(f[2] || '').trim().toUpperCase();
+    var date = String(f[4] || '').trim(), debit = String(f[6] || '').trim();
+    var amount = parseAmount(f[7]), name = String(f[10] || '').trim();
+    var ifsc = String(f[12] || '').trim().toUpperCase(), acc = String(f[13] || '').trim();
+
+    if (['NEFT', 'RTGS', 'IFT', 'IMPS'].indexOf(pmt) < 0) rowAdd(i, 'pmt', 'error', 'Payment type "' + f[2] + '" is not NEFT, RTGS, IFT or IMPS');
+    var d = parseDMY(date);
+    if (!d) rowAdd(i, 'date', 'error', 'Payment date "' + date + '" is not DD/MM/YYYY');
+    else if (d < today) rowAdd(i, 'date', 'error', 'Payment date ' + date + ' is in the past — the bank will reject it');
+    if (!debit) rowAdd(i, 'debit', 'error', 'Debit A/C is empty');
+    else if (!isKnownDebit(debit)) rowAdd(i, 'debit', 'error', unknownDebitMsg(debit));
+    if (isNaN(amount)) rowAdd(i, 'amount', 'error', 'Amount "' + f[7] + '" is not a valid number');
+    else if (amount <= 0) rowAdd(i, 'amount', 'error', 'Amount must be more than 0');
+    if (!name) rowAdd(i, 'name', 'error', 'Beneficiary name is empty');
+    if (!IFSC_RE.test(ifsc)) rowAdd(i, 'ifsc', 'error', 'IFSC "' + f[12] + '" is not valid (11 characters, e.g. HDFC0001234)');
+    if (!acc) rowAdd(i, 'accNo', 'error', 'Beneficiary account number is empty');
+    else if (!/^\d+$/.test(acc)) rowAdd(i, 'accNo', 'warn', 'Beneficiary account number contains letters or symbols');
+    if (acc && !isNaN(amount)) {
+      var key = acc + '|' + amount.toFixed(2) + '|' + String(f[29] || '').toUpperCase();
+      if (seen[key] !== undefined) rowAdd(i, 'dup', 'warn', 'Possible duplicate of row ' + (seen[key] + 1) + ' (same account, amount and enrichment)');
+      else seen[key] = i;
+    }
+  });
+  return v;
+}
+
+function refreshGeneric() {
+  var v = validateGeneric();
+  renderIssues(v);
+  updateDownloadState(v);
+  var lines = genericLines();
+  var total = lines.reduce(function(s, f){ var a = parseAmount(f[7]); return s + (isNaN(a) ? 0 : a); }, 0);
+  document.getElementById('sumAmount').textContent = lines.length ? fmtAmt(total) : '—';
+  return v;
+}
+
 var GLOBAL_FOCUS = { debit: 'cfgDebitAc', date: 'cfgPayDate', cc: 'ccAddInput' };
 
 function renderIssues(v) {
   var panel = document.getElementById('issuesPanel');
   var list  = document.getElementById('issuesList');
   var title = document.getElementById('issuesTitle');
-  if (!parsedRows.length || currentMode !== 'erp') { panel.classList.remove('visible'); return; }
+  var count = currentMode === 'erp' ? parsedRows.length : genericLines().length;
+  if (!count) { panel.classList.remove('visible'); return; }
   panel.classList.add('visible');
   panel.classList.toggle('ok', !v.errors && !v.warnings);
   panel.classList.toggle('warn-only', !v.errors && v.warnings > 0);
   if (!v.errors && !v.warnings) {
-    title.textContent = '✓ All checks passed — ' + plural(parsedRows.length, 'payment') + ' ready';
+    title.textContent = '✓ All checks passed — ' + plural(count, 'payment') + ' ready';
     list.innerHTML = '';
     return;
   }
@@ -2093,7 +2182,7 @@ function renderIssues(v) {
     if (EDIT_FIELDS.indexOf(field) < 0) field = 'name';
     html.push('<div class="issue-row" data-row="' + i + '" data-field="' + field + '">' +
       '<span class="row-num lvl-' + lvl + '">Row ' + (+i + 1) + '</span>' +
-      '<span>' + esc(effRow(parsedRows[i], cfg).name || '(no name)') + ' — ' +
+      '<span>' + esc((currentMode === 'erp' ? effRow(parsedRows[i], cfg).name : genericLines()[i][10]) || '(no name)') + ' — ' +
       esc(issues.map(function(x){ return x.msg; }).join('; ')) + '</span></div>');
   });
   list.innerHTML = html.join('');
@@ -2111,14 +2200,14 @@ document.getElementById('issuesList').addEventListener('click', function(e){
 
 function updateDownloadState(v) {
   var hint    = document.getElementById('downloadHint');
-  var blocked = currentMode === 'erp' && !!v && v.errors > 0;
+  var blocked = !!v && v.errors > 0;
   ['btnXls','btnTxt','btnBoth'].forEach(function(id){
     document.getElementById(id).disabled = blocked;
   });
   if (blocked) {
     hint.className   = 'download-hint error';
     hint.textContent = 'Fix ' + plural(v.errors, 'error') + ' listed above to enable download';
-  } else if (currentMode === 'erp' && v && v.warnings) {
+  } else if (v && v.warnings) {
     hint.className   = 'download-hint warn';
     hint.textContent = plural(v.warnings, 'warning') + ' — review them before downloading';
   } else {
@@ -2702,11 +2791,10 @@ var pendingDownload = null;
 function requestDownload(kind) {
   if (currentMode === 'generic') {
     if (kind === 'xls') { showToast('Generic mode: use Download TXT for bank upload', 'error'); return; }
-    downloadTxt();
-    return;
-  }
-  if (!parsedRows.length) { showToast('No payment rows to download', 'error'); return; }
-  var v = refreshDerived();
+    kind = 'txt';
+    if (!genericLines().length) { showToast('No data to download', 'error'); return; }
+  } else if (!parsedRows.length) { showToast('No payment rows to download', 'error'); return; }
+  var v = currentMode === 'generic' ? refreshGeneric() : refreshDerived();
   if (v.errors) {
     showToast('Fix ' + plural(v.errors, 'error') + ' before downloading', 'error');
     document.getElementById('issuesPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2721,15 +2809,23 @@ function distinct(list) {
 
 function openConfirm(kind, v) {
   var cfg     = getConfig();
-  var effs    = parsedRows.map(function(r){ return effRow(r, cfg); });
+  var generic = currentMode === 'generic';
+  var effs    = generic
+    ? genericLines().map(function(f){
+        return { debit: f[6], date: f[4], pmtType: f[2], amount: parseAmount(f[7]) };
+      })
+    : parsedRows.map(function(r){ return effRow(r, cfg); });
   var debits  = distinct(effs.map(function(e){ return e.debit; }));
   var dates   = distinct(effs.map(function(e){ return e.date; }));
-  var neft    = effs.filter(function(e){ return e.pmtType === 'NEFT'; }).length;
+  var types   = distinct(effs.map(function(e){ return e.pmtType; })).map(function(t){
+                  return effs.filter(function(e){ return e.pmtType === t; }).length + ' ' + t;
+                }).join(' · ');
   var vendor  = parsedRows.filter(function(r){ return r.source === 'vendor'; }).length;
   var total   = effs.reduce(function(s, e){ return s + safeAmount(e); }, 0);
   var items = [
-    ['Fund type',     cfg.fundType],
-    ['Payments',      parsedRows.length + ' (' + vendor + ' vendor · ' + (parsedRows.length - vendor) + ' expense)'],
+    ['Fund type',     generic ? 'Generic mode (pre-formatted Kotak file)' : cfg.fundType],
+    ['Payments',      generic ? String(effs.length)
+                              : parsedRows.length + ' (' + vendor + ' vendor · ' + (parsedRows.length - vendor) + ' expense)'],
     ['Total amount',  new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', minimumFractionDigits:2}).format(total)],
     ['Debit A/C',     debits.length === 1 ? debits[0] : debits.map(function(d){
                         var mine = effs.filter(function(e){ return e.debit === d; });
@@ -2737,7 +2833,7 @@ function openConfirm(kind, v) {
                         return d + ': ' + plural(mine.length, 'payment') + ', Rs ' + fmtINR(sum);
                       }).join('\n')],
     ['Payment date',  dates.length === 1 ? dates[0] : dates.length + ' different: ' + dates.join(', ')],
-    ['Payment types', neft + ' NEFT · ' + (effs.length - neft) + ' IFT'],
+    ['Payment types', types],
     ['File',          { xls: 'Kotak XLS', txt: 'Kotak TXT', both: 'Kotak XLS + TXT' }[kind]],
   ];
   document.getElementById('confirmGrid').innerHTML = items.map(function(it){
@@ -2893,7 +2989,7 @@ ccInput.addEventListener('paste', function(e){
 // ─── Saved settings (this browser only) ──────────────────────────────────────
 var SETTINGS_KEY = 'kotakPayConverter.settings';
 var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign',
-                    'gmailTo','gmailCc','gmailAccount','gmailSignOff'];
+                    'gmailTo','gmailCc','gmailAccount','gmailSignOff','cfgExtraDebits'];
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
@@ -3042,10 +3138,12 @@ document.getElementById('resetSettingsBtn').addEventListener('click', function()
 function onConfigChange() {
   checkDateAlert();
   if (currentMode === 'erp' && parsedRows.length) renderPreview();
+  else if (currentMode === 'generic' && genericLines().length) refreshGeneric();
 }
 
 ['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
- 'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount','gmailSignOff'].forEach(function(id){
+ 'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount','gmailSignOff',
+ 'cfgExtraDebits'].forEach(function(id){
   document.getElementById(id).addEventListener('input', function(){
     if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
     if (id.indexOf('gmail') === 0) {
