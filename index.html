@@ -714,7 +714,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.13</div>
+    <div class="badge">v1.14</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -986,15 +986,18 @@
     <div class="config-grid" style="grid-template-columns:2fr 1fr;">
       <div class="field-group">
         <label for="emailMaker">Maker (prepares the payments)</label>
-        <input type="text" id="emailMaker" value="Hetal Chauhan">
+        <select id="emailMaker"></select>
+        <input type="text" id="emailMakerOther" placeholder="Type the maker's name" autocomplete="off" hidden>
       </div>
       <div class="field-group">
-        <label for="emailChecker">Checker(s)</label>
-        <input type="text" id="emailChecker" value="Vipin Nair, Purushottam Nagla">
+        <label for="emailChecker">Checker</label>
+        <select id="emailChecker"></select>
+        <input type="text" id="emailCheckerOther" placeholder="Type the checker's name" autocomplete="off" hidden>
+        <div class="field-help">Default: Purushottam Nagla for Non-FCRA, Vipin Nair for FCRA. Change it if someone is on leave; it goes back to the default next time.</div>
       </div>
       <div class="field-group stage-check">
-        <label for="chkGmailTo">Gmail draft: To (checkers' email addresses)</label>
-        <input type="text" id="chkGmailTo" value="vipinn@iima.ac.in, purushottamn@iima.ac.in" placeholder="comma-separated email addresses" autocomplete="off">
+        <label for="chkGmailTo">Gmail draft: To (checker's email address)</label>
+        <input type="text" id="chkGmailTo" value="" placeholder="filled from the checker; type it for Other" autocomplete="off">
       </div>
       <div class="field-group stage-check">
         <label for="chkGmailCc">Gmail draft: Cc (optional)</label>
@@ -1208,7 +1211,8 @@
           <li>The checker opens that downloaded TXT in this app (drop the .txt on the upload area). The batch code beside the row count must match the code in the email: any change to any payment gives a different code. The checks run on the file too.</li>
           <li><strong>Step 2 · For final approval:</strong> the checker switches to Step 2 and sends the approval email to Amitkumar, with "Prepared by" and "Checked by" lines and the same batch code.</li>
         </ol>
-        <p>Pick the step with the two buttons at the top of the panel. Maker and checker names, and each step's Gmail To and Cc, are remembered.</p>
+        <p>Pick the step with the two buttons at the top of the panel. The <strong>Maker</strong> is Hetal Chauhan and the <strong>Checker</strong> is Purushottam Nagla for Non-FCRA or Vipin Nair for FCRA. If someone is on leave, pick another name or "Other…" and type it; Step 1's Gmail To follows the checker (type the address for Other). These choices go back to the defaults next time.</p>
+        <p>The email's Project column shows only the head cost centre: the text before the first "-" or ":" (e.g. "Designated Fund -Seed Support &amp; Portfolio Management Fund" shows as "Designated Fund", "JBF - Grant" as "JBF").</p>
         <ul>
           <li><strong>To</strong> and <strong>Signature name</strong> are editable at the top of the panel and are remembered.</li>
           <li><strong>&#x2709; Draft in Gmail</strong> — opens a new Gmail draft with the To and Cc addresses and the subject filled in, and copies the formatted email (with the payment table) to your clipboard. Gmail cannot receive a table through a link, so you paste it: in the draft, <strong>triple-click</strong> the line "Triple-click this line…" and press <strong>Ctrl+V</strong> (&#x2318;V on Mac). The full email with the table replaces that line. Attach the Excel if needed, then send. Gmail keeps it in Drafts until you send it.</li>
@@ -1386,6 +1390,7 @@ function setFcra(fcra) {
   document.getElementById('cfgFundType').value = fcra ? 'FCRA' : 'Non-FCRA';
   document.getElementById('cfgDebitAc').value  = savedDebit();  // FCRA and Non-FCRA each keep their own debit A/C
   document.getElementById('projDebitGroup').style.display = fcra ? 'none' : '';
+  setPerson('emailChecker', defaultChecker());
   if (parsedRows.length) renderPreview();
 }
 
@@ -2232,6 +2237,68 @@ function currentBatchCode() {
   return batchCodeOf(currentMode === 'generic' ? (genericRows && genericRows._txtLines) : buildTxtLines());
 }
 
+// ─── Maker and checker ───────────────────────────────────────────────────────
+// Defaults: maker Hetal Chauhan; checker Purushottam Nagla (Non-FCRA) or Vipin
+// Nair (FCRA). Anyone can be picked, or "Other" typed, when someone is on
+// leave; the choice is not remembered, so the next session starts at the default.
+var TEAM = [
+  { name: 'Hetal Chauhan',     email: 'hetalc@iima.ac.in' },
+  { name: 'Vipin Nair',        email: 'vipinn@iima.ac.in' },
+  { name: 'Purushottam Nagla', email: 'purushottamn@iima.ac.in' },
+];
+var DEFAULT_MAKER = 'Hetal Chauhan';
+var OTHER_PERSON  = '__other';
+
+function defaultChecker() {
+  return isFcra ? 'Vipin Nair' : 'Purushottam Nagla';
+}
+
+function teamEmail(name) {
+  var t = TEAM.filter(function(m){ return m.name === name; })[0];
+  return t ? t.email : '';
+}
+
+function personName(selId) {
+  var sel = document.getElementById(selId);
+  return sel.value === OTHER_PERSON ? document.getElementById(selId + 'Other').value.trim() : sel.value;
+}
+
+function setPerson(selId, name) {
+  var sel = document.getElementById(selId);
+  if (teamEmail(name)) { sel.value = name; }
+  else { sel.value = OTHER_PERSON; document.getElementById(selId + 'Other').value = name; }
+  syncPeople();
+}
+
+// Show the name box for "Other"; Step 1 goes to the checker's address
+function syncPeople() {
+  ['emailMaker', 'emailChecker'].forEach(function(id){
+    document.getElementById(id + 'Other').hidden = document.getElementById(id).value !== OTHER_PERSON;
+  });
+  var to = document.getElementById('chkGmailTo');
+  to.value = teamEmail(personName('emailChecker'));
+  to.classList.remove('field-invalid');
+  renderEmailTemplate();
+}
+
+['emailMaker', 'emailChecker'].forEach(function(id){
+  var sel = document.getElementById(id);
+  sel.innerHTML = TEAM.map(function(m){ return '<option value="' + esc(m.name) + '">' + esc(m.name) + '</option>'; }).join('') +
+    '<option value="' + OTHER_PERSON + '">Other…</option>';
+  sel.addEventListener('change', function(){
+    syncPeople();
+    if (sel.value === OTHER_PERSON) document.getElementById(id + 'Other').focus();
+  });
+  document.getElementById(id + 'Other').addEventListener('input', renderEmailTemplate);
+});
+document.getElementById('emailMaker').value = DEFAULT_MAKER;
+
+// Project for the approval email: the head cost centre only, i.e. the text
+// before the first "-" or ":" ("JBF - Grant - NFC: Main" -> "JBF")
+function headCostCentre(costCenter) {
+  return String(costCenter || '').split(/[-:]/)[0].trim();
+}
+
 // ─── Email steps: 1 maker -> checkers, 2 checker -> approver ─────────────────
 function emailStage() {
   return document.getElementById('emailStage').value === 'approve' ? 'approve' : 'check';
@@ -2771,7 +2838,7 @@ function emailData() {
     return {
       name:       properName(emailName(r)),
       amount:     safeAmount(effRow(r, cfg)),
-      project:    extractProject(r.costCenter),
+      project:    headCostCentre(r.costCenter),
       purpose:    sentenceCase(sanitize(cleanPurpose(r.purpose))),
       purposeRaw: sentenceCase(cleanPurpose(r.purpose)),
     };
@@ -2779,8 +2846,8 @@ function emailData() {
   var total    = rows.reduce(function(s, x){ return s + x.amount; }, 0);
   var letterNo = cfg.letterNo.padStart(2,'0');
   var stage    = emailStage();
-  var maker    = document.getElementById('emailMaker').value.trim();
-  var checker  = document.getElementById('emailChecker').value.trim();
+  var maker    = personName('emailMaker');
+  var checker  = personName('emailChecker');
   var payDisp  = String(d.getDate()).padStart(2,'0') + '-' +
                  String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear();
   return {
@@ -3337,7 +3404,7 @@ ccInput.addEventListener('paste', function(e){
 var SETTINGS_KEY = 'kotakPayConverter.settings';
 var SAVED_FIELDS = ['cfgClientCode','cfgProductCode','cfgBankCode','cfgEmails','cfgFilter','emailTo','emailSign',
                     'gmailTo','gmailCc','gmailAccount','gmailSignOff','cfgExtraDebits',
-                    'cfgEnrMax','emailMaker','emailChecker','chkGmailTo','chkGmailCc','emailStage'];
+                    'cfgEnrMax','chkGmailCc','emailStage'];
 var DEFAULT_SETTINGS = {};
 SAVED_FIELDS.forEach(function(id){ DEFAULT_SETTINGS[id] = document.getElementById(id).value; });
 
@@ -3491,12 +3558,10 @@ function onConfigChange() {
 
 ['cfgClientCode','cfgProductCode','cfgBankCode','cfgDebitAc','cfgFilter',
  'cfgPayDate','cfgLetterNo','emailTo','emailSign','gmailTo','gmailCc','gmailAccount','gmailSignOff',
- 'cfgExtraDebits','cfgEnrMax','emailMaker','emailChecker','chkGmailTo','chkGmailCc'].forEach(function(id){
+ 'cfgExtraDebits','cfgEnrMax','chkGmailTo','chkGmailCc'].forEach(function(id){
   document.getElementById(id).addEventListener('input', function(){
     if (id !== 'cfgPayDate' && id !== 'cfgLetterNo') saveSettings();
-    if (id === 'emailMaker' || id === 'emailChecker') {
-      renderEmailTemplate();
-    } else if (id.indexOf('gmail') === 0 || id.indexOf('chkGmail') === 0) {
+    if (id.indexOf('gmail') === 0 || id.indexOf('chkGmail') === 0) {
       document.getElementById(id).classList.remove('field-invalid');
       renderEmailTemplate();
     } else if (id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
