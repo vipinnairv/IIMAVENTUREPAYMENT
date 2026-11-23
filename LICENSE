@@ -1,0 +1,50 @@
+Kotak Pay Converter — Proprietary License
+Copyright (c) 2026 Vipin Nair. All rights reserved.
+
+Built for CIIE Initiatives (IIMA Ventures).
+
+This software and its source code (the "Software"), including the file
+index.html and all accompanying files in this repository, are the
+proprietary and confidential property of Vipin Nair (the "Owner").
+
+1. No license is granted.
+   No permission is given to any person or organization to use, copy,
+   modify, merge, publish, distribute, sublicense, host, or sell copies
+   of the Software, in whole or in part, except under a separate written
+   agreement signed by the Owner. CIIE Initiatives (IIMA Ventures) and
+   its staff may use the Software internally for CIIE's own payment
+   processing; this internal-use permission does not transfer ownership
+   or allow redistribution.
+
+2. No redistribution or derivative works.
+   You may not share, publish, or make the Software available to any third
+   party, and you may not create derivative works based on it, without the
+   Owner's prior written permission.
+
+3. Confidentiality.
+   The Software may embed account numbers, IFSC codes, email addresses,
+   and other information relating to CIIE Initiatives and its vendors.
+   Treat the Software and any data within or produced by it as
+   confidential, and do not disclose it outside the authorized users.
+
+4. Third-party components.
+   The Software loads the SheetJS Community Edition library (xlsx) at
+   runtime from a public CDN; that library is distributed by its authors
+   under the Apache License 2.0 and remains subject to its own terms. The
+   Software may also query a public IFSC lookup service. These third-party
+   components are not covered by this license.
+
+5. No warranty.
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+   The Software prepares bank payment files; the user is solely responsible
+   for verifying every payment before submitting it to the bank. IN NO
+   EVENT SHALL THE OWNER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+   FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE, INCLUDING ANY INCORRECT, REJECTED, OR
+   DUPLICATE PAYMENT.
+
+For permissions beyond the scope of this license, contact:
+Vipin Nair — vipinn@iima.ac.in

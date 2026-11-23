@@ -1,0 +1,18 @@
+Copyright (c) 2026 Vipin Nair. All rights reserved.
+
+Project:  Kotak Pay Converter (ERPNext to Kotak Bank Payment File)
+Author:   Vipin Nair <vipinn@iima.ac.in>
+Built for: CIIE Initiatives (IIMA Ventures)
+
+This repository and its contents are proprietary. See the LICENSE file for
+the full terms. No part of this software may be used, copied, modified, or
+distributed except as permitted there or under a separate written agreement
+with the author.
+
+Third-party components (not owned by the author):
+- SheetJS Community Edition (xlsx), (c) SheetJS LLC, Apache License 2.0,
+  loaded at runtime from a public CDN.
+- Public IFSC lookup service (ifsc.razorpay.com), used for bank/branch
+  lookups; subject to its provider's terms.
+- Fonts (Poppins, DM Mono) served by Google Fonts under the SIL Open Font
+  License.
