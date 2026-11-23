@@ -714,7 +714,7 @@
     </div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <div class="badge">v1.12</div>
+    <div class="badge">v1.13</div>
     <button class="help-btn" onclick="toggleHelp()" title="How to use this app">? Help</button>
   </div>
 </header>
@@ -888,7 +888,7 @@
         <div class="field-help">Added to every payment. The supplier email (col V) and creator email (col AF) are added per row — hover ✉ in the table to see a row's full list.</div>
       </div>
       <div class="field-group">
-        <label for="cfgLetterNo">Letter / Batch No (for email subject)</label>
+        <label for="cfgLetterNo">Letter / Batch No (email subject and file name)</label>
         <input type="text" id="cfgLetterNo" placeholder="e.g. 01">
       </div>
       <div class="field-group">
@@ -1190,6 +1190,8 @@
         <dl class="help-grid">
           <dt>Kotak XLS</dt>
           <dd>49-column Excel file for the Kotak Bank portal.</dd>
+          <dt>File name</dt>
+          <dd>Client code + payment date (DDMMYY) + Letter / Batch No, with FCRA added for FCRA payments: e.g. CIIEI231126234A.xls / .txt, or CIIEI231126234AFCRA.txt. Enter the Letter / Batch No before downloading. In Generic mode the TXT keeps the name of the file you opened.</dd>
           <dt>Kotak TXT</dt>
           <dd>Tilde-separated text file (~). Same data, alternate format. This is what the bank actually processes.</dd>
           <dt>Download Both</dt>
@@ -2081,6 +2083,9 @@ function validateAll() {
   if (parseISODate(cfg.payDateRaw) < today) {
     add(v.global, 'error', 'date', 'Payment date ' + cfg.payDate + ' is in the past — the bank will reject it');
   }
+  if (!document.getElementById('cfgLetterNo').value.trim()) {
+    add(v.global, 'warn', 'letter', 'Letter / Batch No is empty, so the files will be named ' + kotakFileName() + ' — enter the letter no');
+  }
   getCcList().forEach(function(e){
     if (!isValidEmail(e)) add(v.global, 'error', 'cc', 'CC email "' + e + '" is not a valid address');
   });
@@ -2460,7 +2465,7 @@ function refreshGeneric() {
   return v;
 }
 
-var GLOBAL_FOCUS = { debit: 'cfgDebitAc', date: 'cfgPayDate', cc: 'ccAddInput' };
+var GLOBAL_FOCUS = { debit: 'cfgDebitAc', date: 'cfgPayDate', cc: 'ccAddInput', letter: 'cfgLetterNo' };
 
 function renderIssues(v) {
   var panel = document.getElementById('issuesPanel');
@@ -3080,7 +3085,7 @@ function downloadXls() {
   });
   var wb2  = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb2, ws, 'Payments');
-  XLSX.writeFile(wb2, 'Kotak_Pmt_' + (fileName||stamp()) + '.xls');
+  XLSX.writeFile(wb2, kotakFileName() + '.xls');
   showToast('Kotak XLS downloaded');
 }
 
@@ -3092,7 +3097,7 @@ function downloadTxt() {
     outName = fileName || stamp();
   } else {
     lines   = buildTxtLines();
-    outName = 'Kotak_Pmt_' + (fileName||stamp());
+    outName = kotakFileName();
   }
   var blob = new Blob([lines.join('\n')], {type:'text/plain'});
   var url  = URL.createObjectURL(blob);
@@ -3102,6 +3107,18 @@ function downloadTxt() {
   a.click();
   URL.revokeObjectURL(url);
   showToast('Kotak TXT downloaded');
+}
+
+// Kotak file name: client code + payment date (DDMMYY) + Letter / Batch No,
+// plus FCRA for FCRA payments, e.g. CIIEI231126234A or CIIEI231126234AFCRA
+function kotakFileName() {
+  var cfg = getConfig();
+  var d   = parseISODate(cfg.payDateRaw);
+  var two = function(n){ return String(n).padStart(2, '0'); };
+  var letter = String(cfg.letterNo).toUpperCase().replace(/[^A-Z0-9]/g, '') || '01';
+  return String(cfg.clientCode).toUpperCase().replace(/[^A-Z0-9]/g, '') +
+    two(d.getDate()) + two(d.getMonth() + 1) + String(d.getFullYear()).slice(-2) +
+    letter.padStart(2, '0') + (isFcra ? 'FCRA' : '');
 }
 
 function doDownload(kind) {
@@ -3161,7 +3178,9 @@ function openConfirm(kind, v) {
     ['Payment date',  dates.length === 1 ? dates[0] : dates.length + ' different: ' + dates.join(', ')],
     ['Payment types', types],
     ['Batch code',    currentBatchCode()],
-    ['File',          { xls: 'Kotak XLS', txt: 'Kotak TXT', both: 'Kotak XLS + TXT' }[kind]],
+    ['File',          generic ? (fileName || stamp()) + '.txt'
+                              : { xls: kotakFileName() + '.xls', txt: kotakFileName() + '.txt',
+                                  both: kotakFileName() + '.xls + .txt' }[kind]],
   ];
   document.getElementById('confirmGrid').innerHTML = items.map(function(it){
     return '<dt>' + esc(it[0]) + '</dt><dd>' + esc(it[1]) + '</dd>';
@@ -3480,7 +3499,7 @@ function onConfigChange() {
     } else if (id.indexOf('gmail') === 0 || id.indexOf('chkGmail') === 0) {
       document.getElementById(id).classList.remove('field-invalid');
       renderEmailTemplate();
-    } else if (id === 'cfgLetterNo' || id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
+    } else if (id === 'emailTo' || id === 'emailSign') renderEmailTemplate();
     else onConfigChange();
   });
 });
